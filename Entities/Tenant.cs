@@ -1,8 +1,8 @@
-﻿
+﻿using Lab.Api.Entities.Base;
+
 namespace Lab.Api.Entities;
 
-public class Tenant
+public class Tenant : BaseEntity
 {
-    public int Id { get; set; }
     public string Name { get; set; }
 }

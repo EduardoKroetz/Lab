@@ -9,4 +9,3 @@ Campos como CreatedAt, UpdatedAt, CreatedBy, UpdatedBy são campos de auditoria, 
 
 Esses campos de auditoria podem e devem ser mapeados na camada de Infra.
 
-## Entidade Base
