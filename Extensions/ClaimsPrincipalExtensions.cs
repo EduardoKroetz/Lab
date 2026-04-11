@@ -1,21 +1,16 @@
-﻿using Lab.Api.Common.Security;
-using System.Security;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace Lab.Api.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {
-    public static int GetTenantId(this ClaimsPrincipal user)
+    public static Guid GetUserId(this ClaimsPrincipal user)
     {
-        var value = user.FindFirstValue(AppClaimTypes.TenantId);
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userId, out Guid parsedUserId))
+            throw new UnauthorizedAccessException("Invalid user ID claim.");
 
-        if (string.IsNullOrEmpty(value))
-            throw new SecurityException("TenantId claim is missing.");
-
-        if (!int.TryParse(value, out var tenantId))
-            throw new SecurityException("TenantId claim is invalid.");
-
-        return tenantId;
+        return parsedUserId;
     }
+
 }
