@@ -1,10 +1,12 @@
 using Lab.Api.Common;
 using Lab.Api.Data;
+using Lab.Api.DTOs;
 using Lab.Api.Entities;
 using Lab.Api.Filters;
 using Lab.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -39,6 +41,19 @@ builder.Services.AddAuthentication(opt =>
         ValidateAudience = false,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
         ValidateIssuerSigningKey = true,      
+    };
+});
+
+builder.Services.Configure<ApiBehaviorOptions>(options => {
+    options.InvalidModelStateResponseFactory = actionContext =>
+    {
+        var errors = actionContext.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .Select(e => e.Value?.Errors?.First().ErrorMessage);
+
+        var responseDto = new ResponseDto(errors);
+
+        return new BadRequestObjectResult(responseDto);
     };
 });
 
