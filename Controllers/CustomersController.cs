@@ -30,8 +30,8 @@ public class CustomersController : ControllerBase
         return Ok(new ResponseDto(dto));
     }
 
-    [HttpGet("{id:guid}", Name = nameof(GetByIdAsync))]
-    public async Task<IActionResult> GetByIdAsync(Guid id)
+    [HttpGet("{id:guid}", Name = nameof(GetCustomerByIdAsync))]
+    public async Task<IActionResult> GetCustomerByIdAsync(Guid id)
     {
         var customer = await _dbContext.Customers.FindAsync(id);
         if (customer == null)
@@ -62,7 +62,7 @@ public class CustomersController : ControllerBase
         await _dbContext.Customers.AddAsync(customer);
         await _dbContext.SaveChangesAsync();
 
-        return CreatedAtRoute(nameof(GetByIdAsync), new { id = customer.Id }, new ResponseDto(customer));
+        return CreatedAtRoute(nameof(GetCustomerByIdAsync), new { id = customer.Id }, new ResponseDto(customer));
     }
 
     [HttpPut("{id:guid}")]
