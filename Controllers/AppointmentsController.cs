@@ -91,11 +91,8 @@ public class AppointmentsController : ControllerBase
             return BadRequest(new ResponseDto("A data de início deve ser anterior à data de término."));
 
         var scheduledAppointment = await _dbContext.Appointments.FirstOrDefaultAsync(a =>
-            (dto.StartDate == a.StartDate) ||
-            (dto.EndDate == a.EndDate) ||
-            (dto.StartDate > a.StartDate && dto.StartDate < a.EndDate) || // Data inicial está dentro de um período
-            (dto.EndDate > a.StartDate && dto.EndDate < a.EndDate) || // Data final está dentro de um período
-            (dto.StartDate < a.StartDate && dto.EndDate > a.EndDate) // Período está dentro de outro período
+            dto.StartDate < a.EndDate &&
+            dto.EndDate > a.StartDate
         );
             
         if (scheduledAppointment != null)
@@ -136,11 +133,8 @@ public class AppointmentsController : ControllerBase
 
         var scheduledAppointment = await _dbContext.Appointments.FirstOrDefaultAsync(a =>
             a.Id != id &&
-            ((dto.StartDate == a.StartDate) ||
-            (dto.EndDate == a.EndDate) ||
-            (dto.StartDate > a.StartDate && dto.StartDate < a.EndDate) || // Data inicial está dentro de um período
-            (dto.EndDate > a.StartDate && dto.EndDate < a.EndDate) || // Data final está dentro de um período
-            (dto.StartDate < a.StartDate && dto.EndDate > a.EndDate)) // Período está dentro de outro período
+            dto.StartDate < a.EndDate &&
+            dto.EndDate > a.StartDate
         );
 
         if (scheduledAppointment != null)
