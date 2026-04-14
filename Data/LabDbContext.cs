@@ -38,6 +38,9 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
             entity.HasOne(e => e.Service)
                 .WithMany()
                 .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.CreatedByUser)
+               .WithMany()
+               .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Service>(entity =>

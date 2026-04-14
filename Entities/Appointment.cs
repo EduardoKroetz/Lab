@@ -13,4 +13,5 @@ public class Appointment
 
     public Customer Customer { get; set; }
     public Service? Service { get; set; }
+    public ApplicationUser? CreatedByUser { get; set; }
 }

@@ -23,9 +23,9 @@ public class ServicesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetListAsync()
     {
-        var services = await _dbContext.Services.ToListAsync();
+        var services = await _dbContext.Services.AsNoTracking().ToListAsync();
 
-        var dto = services.Select(c => new GetServiceDto(c.Id, c.Name, c.Description, c.Price)).ToList();
+        var dto = services.Select(s => new GetServiceDto(s.Id, s.Name, s.Description, s.Price)).ToList();
 
         return Ok(new ResponseDto(dto));
     }

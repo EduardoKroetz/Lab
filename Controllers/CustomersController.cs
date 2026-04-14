@@ -23,7 +23,7 @@ public class CustomersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetListAsync()
     {
-        var customers = await _dbContext.Customers.ToListAsync();
+        var customers = await _dbContext.Customers.AsNoTracking().ToListAsync();
 
         var dto = customers.Select(c => new GetCustomerDto(c.Id, c.Name, c.CpfCnpj, c.Email, c.PhoneNumber)).ToList();
 
