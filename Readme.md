@@ -1,80 +1,135 @@
-﻿
-# Entidades e Domínio
+﻿# Escopo
 
-## Auditoria
+## 1. Multi-Tenant
 
-Auditoria não deve ser posta em entidades pois não faz parte de dominio, e sim de Infra.
+- Cada entidade do sistema deve possuir `TenantId`
+- Um tenant representa um negócio (ex: barbearia, clínica)
+- Isolamento lógico de dados por tenant
+- Todas as operações devem respeitar o contexto do tenant
 
-Campos como CreatedAt, UpdatedAt, CreatedBy, UpdatedBy são campos de auditoria, que apesar de poderem ser informações de negócio, poluem o dominio e ainda permite que regras de negócio sejam aplicadas sobre ele.
+---
 
-Esses campos de auditoria podem e devem ser mapeados na camada de Infra.
+## 2. Entidades principais
 
-# Segurança 
+### Cliente
 
-## JWT 
-JWT é um token auto-contido, assinado, que representa um conjunto de claims.
+- Nome
+- Telefone / Email
+- Pertence a um tenant
+- Pode criar agendamentos (sem necessidade de autenticação inicialmente)
 
-Auto-contido = tudo que o servidor precisa pra confiar naquele token já está dentro dele.
-Isso significa que o servidor não preciso consultar banco, cache, nem sessão, só precisa da chave da assinatura e das regras de validação.
+---
 
-Estrutura: header.payload.signature
-- Header: algoritmo e tipo
-- Payload: claims (dados do usuário)
-- Signature: prova criptográfica de integridade e autoria
+### Profissional
 
-Nada é secreto no token. Tudo é legível. A confiança vem só da assinatura.
+- Nome
+- Pertence a um tenant
+- Possui:
+    - horários de trabalho
+    - exceções de agenda
+    - tempo de intervalo entre atendimentos (opcional)
 
-A assinatura é gerada assim:
-HMAC(chave, conteúdo) → assinatura
+---
 
-### Por que alterar o payload invalida o token
-- qualquer alteração muda o hash
-- a assinatura original não corresponde mais
-- sem a chave, não dá pra gerar outra válida
-O servidor:
-- não conhece o payload original
-- só verifica coerência matemática entre conteúdo recebido e assinatura
+### Serviço
 
-# ASP.NET Core
+- Nome
+- Duração padrão (em minutos)
+- Pertence a um tenant
 
-## Autenticação e Autorização
+---
 
-O ASP.NET Core não autentica, ele é mais um orquestrador de esquemas de autenticação. 
+### ServiceProfessional (relação)
 
-Através de IAuthenticationHandler é possível injetar diferentes formas de se autenticar e diferentes implementações/handlers de autenticação. 
+- Relaciona Serviço ↔ Profissional
+- Permite:
+    - associar múltiplos profissionais a um serviço
+    - definir duração específica por profissional (override)
 
-E assim, através do esquema (ex: JWT, OAuth) é possível definir, por ex:
-- Authenticate (como o usuário vai ser autenticado)
-- Challange (como o ASP.NET Core vai lidar com usuário não autenticado. Se vai retornar 401 (JWT), 302 (Cookies), etc)
-- Forbid (como lidar com usuários não autorizados)
-Cada esquema tem exatamente um handler.
+---
 
-O AuthenticationMiddleware por sua vez é quem tenta autenticar (chama HttpContext.AuthenticateAsync).
-Se a autenticação der sucesso, define HttpContext.User.
-Através de UseAuthentication que esse middleware é ativado.
+### Agendamento
 
-E o Authorization verifica a permissão do usuário, se possui claim X, passa em certa policy e caso não, retorna Challange ou Forbid
+- Cliente
+- Profissional
+- Serviço
+- Data/Hora de início
+- Duração
+- Estado
+- Pertence a um tenant
 
-### Fluxo
+---
 
-Request
- ↓
-UseAuthentication
- ↓
-AuthenticationHandler (por scheme)
- ↓
-HttpContext.User
- ↓
-UseAuthorization
- ↓
-[Authorize] → Challenge / Forbid
+## 3. Regras de Duração
 
-## Outras dúvidas
+Ordem de precedência da duração:
 
-Como funciona container DI por baixo?
-Se eu não usar async em um controller, qual o impacto?
+1. Duração definida no agendamento (manual)
+2. Duração específica do profissional (`ServiceProfessional`)
+3. Duração padrão do serviço
 
+---
 
+## 4. Disponibilidade do Profissional
 
+### Horários de trabalho
 
+- Definidos por dia da semana
+- Contém:
+    - horário de início
+    - horário de fim
 
+---
+
+### Exceções de agenda
+
+- Datas específicas
+- Podem:
+    - bloquear completamente o dia
+    - sobrescrever horário padrão
+
+---
+
+### Intervalo entre atendimentos
+
+- Tempo adicional após cada agendamento
+- Opcional por profissional
+
+---
+
+## 5. Regras de Agendamento
+
+- Um agendamento deve respeitar:
+    - horário de trabalho do profissional
+    - exceções
+    - duração do serviço
+    - intervalo entre atendimentos
+- Não permitir conflito de horários por padrão
+- (Futuro) Permitir exceções controladas (overbooking)
+
+---
+
+## 6. Estados do Agendamento
+
+Estados possíveis:
+
+- Criado
+- Confirmado
+- Cancelado
+- Concluído
+
+---
+
+### Regras de transição (inicial)
+
+- Criado → Confirmado
+- Criado → Cancelado
+- Confirmado → Cancelado
+- Confirmado → Concluído
+- Não permitir transições inválidas
+
+---
+
+### Conclusão automática
+
+- Agendamentos devem ser marcados como "Concluído" após o horário de término
