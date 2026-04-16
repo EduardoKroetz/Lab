@@ -1,8 +1,8 @@
-﻿using Lab.Api.Data;
+﻿using Lab.Api.Application.DTOs.Appointments;
+using Lab.Api.Common.Extensions;
 using Lab.Api.DTOs;
-using Lab.Api.DTOs.Appointments;
 using Lab.Api.Entities;
-using Lab.Api.Extensions;
+using Lab.Api.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

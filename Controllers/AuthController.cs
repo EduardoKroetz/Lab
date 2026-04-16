@@ -1,7 +1,7 @@
-﻿using Lab.Api.DTOs;
-using Lab.Api.DTOs.Auth;
-using Lab.Api.Entities;
-using Lab.Api.Services;
+﻿using Lab.Api.Application.DTOs.Auth;
+using Lab.Api.Domain.Entities;
+using Lab.Api.DTOs;
+using Lab.Api.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

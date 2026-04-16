@@ -1,9 +1,10 @@
-using Lab.Api.Common;
-using Lab.Api.Data;
+using Lab.Api.Common.Configuration;
+using Lab.Api.Common.Filters;
+using Lab.Api.Domain.Entities;
 using Lab.Api.DTOs;
-using Lab.Api.Entities;
-using Lab.Api.Filters;
-using Lab.Api.Services;
+using Lab.Api.Infrastructure.Data;
+using Lab.Api.Infrastructure.Services;
+using Lab.Api.Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantProvider, HttpTenantProvider>();
+
 var dbConnection = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new ArgumentNullException("Invalid connection string");
-builder.Services.AddDbContext<LabDbContext>(x => {
+builder.Services.AddDbContext<LabDbContext>(x =>
+{
     x.UseSqlServer(dbConnection);
 });
 
@@ -33,18 +38,19 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(opt => 
+.AddJwtBearer(opt =>
 {
     opt.TokenValidationParameters = new()
     {
         ValidateIssuer = false,
         ValidateAudience = false,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-        ValidateIssuerSigningKey = true,      
+        ValidateIssuerSigningKey = true,
     };
 });
 
-builder.Services.Configure<ApiBehaviorOptions>(options => {
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
     options.InvalidModelStateResponseFactory = actionContext =>
     {
         var errors = actionContext.ModelState

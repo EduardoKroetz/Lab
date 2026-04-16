@@ -1,7 +1,7 @@
-﻿using Lab.Api.Data;
+﻿using Lab.Api.Application.DTOs.Customers;
 using Lab.Api.DTOs;
-using Lab.Api.DTOs.Customers;
 using Lab.Api.Entities;
+using Lab.Api.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

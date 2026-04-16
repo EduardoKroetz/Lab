@@ -1,7 +1,5 @@
-﻿using Lab.Api.Data;
-using Lab.Api.DTOs;
-using Lab.Api.DTOs.Services;
-using Lab.Api.Entities;
+﻿using Lab.Api.Application.DTOs.Services;
+using Lab.Api.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +44,7 @@ public class ServicesController : ControllerBase
     public async Task<IActionResult> PostAsync([FromBody] UpsertServiceDto dto)
     {
         var service = new Service
-        {  
+        {
             Name = dto.Name,
             Description = dto.Description,
             Price = dto.Price

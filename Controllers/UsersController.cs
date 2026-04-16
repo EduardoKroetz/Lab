@@ -1,9 +1,7 @@
-﻿using Lab.Api.DTOs;
-using Lab.Api.DTOs.Users;
-using Lab.Api.Entities;
-using Lab.Api.Extensions;
+﻿using Lab.Api.Application.DTOs;
+using Lab.Api.Application.Services;
+using Lab.Api.Common.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lab.Api.Controllers;
@@ -13,29 +11,19 @@ namespace Lab.Api.Controllers;
 [Authorize]
 public class UsersController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserService _userService;
 
-    public UsersController(UserManager<ApplicationUser> userManager)
+    public UsersController(UserService userService)
     {
-        _userManager = userManager;
+        _userService = userService;
     }
 
-    [HttpGet("current")] 
+    [HttpGet("current")]
     public async Task<IActionResult> GetCurrentUserAsync()
     {
         var userId = User.GetUserId();
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
-            return NotFound(new ResponseDto("Usuário não encontrado"));
-
-        var dto = new GetCurrentUserDto
-        {
-            Id = user.Id,
-            UserName = user.UserName,
-            Email = user.Email,
-            Phone = user.PhoneNumber
-        };
+        var dto = await _userService.GetCurrentUserAsync(userId);
 
         return Ok(new ResponseDto(dto));
     }
