@@ -1,4 +1,5 @@
-﻿using Lab.Api.DTOs;
+using Lab.Api.Application.DTOs;
+using Lab.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace Lab.Api.Common.Filters;
@@ -9,6 +10,8 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         var (statusCode, errorMessage) = exception switch
         {
+            NotFoundException notFoundException => (StatusCodes.Status404NotFound, notFoundException.Message),
+            BadRequestException badRequestException => (StatusCodes.Status400BadRequest, badRequestException.Message),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Acesso não autorizado"),
             _ => (StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado.")
         };
@@ -17,6 +20,6 @@ public class GlobalExceptionHandler : IExceptionHandler
         httpContext.Response.ContentType = "application/json";
         httpContext.Response.WriteAsJsonAsync(new ResponseDto(errorMessage), cancellationToken);
 
-        return new ValueTask<bool>(true);     
+        return new ValueTask<bool>(true);
     }
 }

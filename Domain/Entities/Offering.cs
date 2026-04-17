@@ -2,7 +2,7 @@
 
 namespace Lab.Api.Domain.Entities;
 
-public class Service : TenantEntity
+public class Offering : TenantEntity
 {
     public string Name { get; set; }
     public string? Description { get; set; }

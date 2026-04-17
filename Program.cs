@@ -1,7 +1,8 @@
+using Lab.Api.Application.DTOs;
+using Lab.Api.Application.Services;
 using Lab.Api.Common.Configuration;
 using Lab.Api.Common.Filters;
 using Lab.Api.Domain.Entities;
-using Lab.Api.DTOs;
 using Lab.Api.Infrastructure.Data;
 using Lab.Api.Infrastructure.Services;
 using Lab.Api.Infrastructure.Services.Interfaces;
@@ -69,6 +70,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<OfferingService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<TenantService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AppointmentService>();
 
 var app = builder.Build();
 
@@ -83,7 +90,6 @@ app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllers();
 

@@ -1,5 +1,5 @@
-﻿using Lab.Api.Domain.Entities;
-using Lab.Api.Infrastructure.Data;
+using Lab.Api.Application.Services;
+using Lab.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lab.Api.Controllers;
@@ -8,18 +8,17 @@ namespace Lab.Api.Controllers;
 [Route("api/[controller]")]
 public class TenantsController : ControllerBase
 {
-    private LabDbContext _labDbContext;
+    private readonly TenantService _tenantService;
 
-    public TenantsController(LabDbContext labDbContext)
+    public TenantsController(TenantService tenantService)
     {
-        _labDbContext = labDbContext;
+        _tenantService = tenantService;
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync(Tenant tenant)
     {
-        await _labDbContext.AddAsync(tenant);
-        await _labDbContext.SaveChangesAsync();
+        await _tenantService.CreateAsync(tenant);
 
         return Ok();
     }

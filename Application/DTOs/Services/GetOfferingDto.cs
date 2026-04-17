@@ -1,8 +1,8 @@
 ﻿namespace Lab.Api.Application.DTOs.Services;
 
-public class GetServiceDto
+public class GetOfferingDto
 {
-    public GetServiceDto(Guid id, string name, string? description, decimal? price)
+    public GetOfferingDto(Guid id, string name, string? description, decimal? price)
     {
         Id = id;
         Name = name;

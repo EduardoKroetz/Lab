@@ -13,6 +13,6 @@ public class Appointment : TenantEntity
     public Guid? CreatedBy { get; set; }
 
     public Customer Customer { get; set; }
-    public Service? Service { get; set; }
+    public Offering? Service { get; set; }
     public ApplicationUser? CreatedByUser { get; set; }
 }

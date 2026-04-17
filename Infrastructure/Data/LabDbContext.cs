@@ -73,7 +73,7 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
                .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<Service>(entity =>
+        modelBuilder.Entity<Offering>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
@@ -91,7 +91,7 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
-    public DbSet<Service> Services { get; set; }
+    public DbSet<Offering> Services { get; set; }
 }
 
 
