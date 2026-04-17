@@ -36,12 +36,7 @@ public class OfferingService
 
     public async Task<GetOfferingDto> CreateAsync(UpsertOfferingDto dto)
     {
-        var offering = new Offering
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            Price = dto.Price
-        };
+        var offering = new Offering(dto.Name, dto.Description, dto.Price);
 
         await _dbContext.Offerings.AddAsync(offering);
         await _dbContext.SaveChangesAsync();
@@ -55,9 +50,7 @@ public class OfferingService
         if (offering == null)
             throw new NotFoundException("Oferta não encontrada.");
 
-        offering.Name = dto.Name;
-        offering.Description = dto.Description;
-        offering.Price = dto.Price;
+        offering.Update(dto.Name, dto.Description, dto.Price);
 
         await _dbContext.SaveChangesAsync();
 

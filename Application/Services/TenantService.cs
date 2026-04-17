@@ -1,5 +1,6 @@
 using AutoMapper;
 using Lab.Api.Application.DTOs.Tenants;
+using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Exceptions;
 using Lab.Api.Infrastructure.Data;
 
@@ -25,17 +26,24 @@ public class TenantService
         return _mapper.Map<GetTenantDto>(tenant);
     }
 
-    public async Task<GetTenantDto> CreateAsync(UpsertTenantDto tenant)
+    public async Task<GetTenantDto> CreateAsync(UpsertTenantDto dto)
     {
-        await _dbContext.AddAsync(tenant);
+        var tenant = new Tenant(dto.Name);
+
+        await _dbContext.Tenants.AddAsync(tenant);
         await _dbContext.SaveChangesAsync();
 
         return _mapper.Map<GetTenantDto>(tenant);
     }
 
-    public async Task<GetTenantDto> UpdateAsync(UpsertTenantDto tenant)
+    public async Task<GetTenantDto> UpdateAsync(Guid tenantId, UpsertTenantDto dto)
     {
-        await _dbContext.AddAsync(tenant);
+        var tenant = await _dbContext.Tenants.FindAsync(tenantId);
+        if (tenant is null)
+            throw new NotFoundException("Tenant não encontrado");
+
+        tenant.Update(dto.Name);
+
         await _dbContext.SaveChangesAsync();
 
         return _mapper.Map<GetTenantDto>(tenant);

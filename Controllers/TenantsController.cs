@@ -1,5 +1,6 @@
+using Lab.Api.Application.DTOs;
+using Lab.Api.Application.DTOs.Tenants;
 using Lab.Api.Application.Services;
-using Lab.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lab.Api.Controllers;
@@ -16,10 +17,10 @@ public class TenantsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostAsync(Tenant tenant)
+    public async Task<IActionResult> PostAsync([FromBody] UpsertTenantDto dto)
     {
-        await _tenantService.CreateAsync(tenant);
+        var responseDto = await _tenantService.CreateAsync(dto);
 
-        return Ok();
+        return Ok(new ResponseDto(responseDto));
     }
 }

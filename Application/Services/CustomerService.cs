@@ -38,13 +38,7 @@ public class CustomerService
     {
         await ValidateAsync(dto);
 
-        var customer = new Customer
-        {
-            Name = dto.Name,
-            CpfCnpj = dto.CpfCnpj,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber
-        };
+        var customer = new Customer(dto.Name, dto.CpfCnpj, dto.Email, dto.PhoneNumber);
 
         await _dbContext.Customers.AddAsync(customer);
         await _dbContext.SaveChangesAsync();
@@ -60,10 +54,7 @@ public class CustomerService
         if (customer == null)
             throw new NotFoundException("Cliente não encontrado.");
 
-        customer.Name = dto.Name;
-        customer.CpfCnpj = dto.CpfCnpj;
-        customer.Email = dto.Email;
-        customer.PhoneNumber = dto.PhoneNumber;
+        customer.Update(dto.Name, dto.CpfCnpj, dto.Email, dto.PhoneNumber);
 
         await _dbContext.SaveChangesAsync();
 
@@ -82,10 +73,10 @@ public class CustomerService
 
     private async Task ValidateAsync(UpsertCustomerDto dto, Guid? id = null)
     {
-        if (await _dbContext.Customers.AnyAsync(c => c.Email == dto.Email && c.Id != id))
+        if (!string.IsNullOrWhiteSpace(dto.Email) && await _dbContext.Customers.AnyAsync(c => c.Email == dto.Email && c.Id != id))
             throw new BadRequestException("Já existe um cliente com este e-mail.");
 
-        if (await _dbContext.Customers.AnyAsync(c => c.CpfCnpj == dto.CpfCnpj && c.Id != id))
+        if (!string.IsNullOrWhiteSpace(dto.CpfCnpj) && await _dbContext.Customers.AnyAsync(c => c.CpfCnpj == dto.CpfCnpj && c.Id != id))
             throw new BadRequestException("Já existe um cliente com este CPF/CNPJ.");
     }
 }

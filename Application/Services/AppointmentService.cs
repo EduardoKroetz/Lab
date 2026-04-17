@@ -3,6 +3,7 @@ using Lab.Api.Application.DTOs.Appointments;
 using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Exceptions;
 using Lab.Api.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lab.Api.Application.Services;
@@ -11,11 +12,13 @@ public class AppointmentService
 {
     private readonly LabDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AppointmentService(LabDbContext dbContext, IMapper mapper)
+    public AppointmentService(LabDbContext dbContext, IMapper mapper, UserManager<ApplicationUser> userManager)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _userManager = userManager;
     }
 
     public async Task<List<GetAppointmentDto>> GetListAsync()
@@ -47,18 +50,21 @@ public class AppointmentService
 
     public async Task<GetAppointmentDto> CreateAsync(UpsertAppointmentDto dto, Guid createdByUserId)
     {
+        var customer = await _dbContext.Customers.FindAsync(dto.CustomerId);
+        if (customer == null)
+            throw new NotFoundException("Cliente não encontrado.");
+
+        var offering = dto.OfferingId.HasValue ? await _dbContext.Offerings.FindAsync(dto.OfferingId.Value) : null;
+        if (dto.OfferingId.HasValue && offering == null)
+            throw new NotFoundException("Oferta não encontrada.");
+
+        var user = await _userManager.FindByIdAsync(createdByUserId.ToString());
+        if (user == null)
+            throw new NotFoundException("Usuário criador não encontrado.");
+
         await ValidateAsync(dto);
 
-        var appointment = new Appointment
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            CustomerId = dto.CustomerId,
-            OfferingId = dto.OfferingId,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
-            CreatedBy = createdByUserId,
-        };
+        var appointment = new Appointment(dto.Name, dto.Description, dto.StartDate, dto.EndDate, customer, offering, user);
 
         await _dbContext.Appointments.AddAsync(appointment);
         await _dbContext.SaveChangesAsync();
@@ -68,18 +74,21 @@ public class AppointmentService
 
     public async Task<GetAppointmentDto> UpdateAsync(Guid id, UpsertAppointmentDto dto)
     {
+        var customer = await _dbContext.Customers.FindAsync(dto.CustomerId);
+        if (customer == null)
+            throw new NotFoundException("Cliente não encontrado.");
+
+        var offering = dto.OfferingId.HasValue ? await _dbContext.Offerings.FindAsync(dto.OfferingId.Value) : null;
+        if (dto.OfferingId.HasValue && offering == null)
+            throw new NotFoundException("Oferta não encontrada.");
+
         var appointment = await _dbContext.Appointments.FindAsync(id);
         if (appointment == null)
             throw new NotFoundException("Agendamento não encontrado.");
 
         await ValidateAsync(dto, id);
 
-        appointment.Name = dto.Name;
-        appointment.Description = dto.Description;
-        appointment.CustomerId = dto.CustomerId;
-        appointment.OfferingId = dto.OfferingId;
-        appointment.StartDate = dto.StartDate;
-        appointment.EndDate = dto.EndDate;
+        appointment.Update(dto.Name, dto.Description, dto.StartDate, dto.EndDate, customer, offering);
 
         await _dbContext.SaveChangesAsync();
 
@@ -98,15 +107,6 @@ public class AppointmentService
 
     private async Task ValidateAsync(UpsertAppointmentDto dto, Guid? appointmentId = null)
     {
-        if (!await _dbContext.Customers.AnyAsync(c => c.Id == dto.CustomerId))
-            throw new BadRequestException("Cliente não encontrado.");
-
-        if (dto.OfferingId.HasValue && !await _dbContext.Offerings.AnyAsync(o => o.Id == dto.OfferingId.Value))
-            throw new BadRequestException("Oferta não encontrada.");
-
-        if (dto.StartDate >= dto.EndDate)
-            throw new BadRequestException("A data de início deve ser anterior à data de término.");
-
         var scheduledAppointment = await _dbContext.Appointments.FirstOrDefaultAsync(a =>
             a.Id != appointmentId &&
             dto.StartDate < a.EndDate &&
