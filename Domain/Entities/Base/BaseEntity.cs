@@ -2,5 +2,9 @@
 
 public class BaseEntity
 {
-    public Guid Id { get; set; }
+    protected BaseEntity() // EF
+    {
+    }
+
+    public Guid Id { get; private set; }
 }

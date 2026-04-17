@@ -1,4 +1,4 @@
-﻿using Lab.Api.Domain.Entities;
+using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Entities.Base;
 using Lab.Api.Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -25,7 +25,6 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
         {
             if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
             {
-                // Configure the TenantId for all entities.
                 modelBuilder.Entity(entityType.ClrType)
                     .Property<Guid>("TenantId")
                     .IsRequired();
@@ -36,9 +35,8 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
                     .HasForeignKey("TenantId")
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // Apply a global TenantId filter.
                 var setTenantFilterMethod = typeof(LabDbContext)
-                    .GetMethod(nameof(SetTenantFilter), (BindingFlags.NonPublic | BindingFlags.Instance))!
+                    .GetMethod(nameof(SetTenantFilter), BindingFlags.NonPublic | BindingFlags.Instance)!
                     .MakeGenericMethod(entityType.ClrType);
 
                 setTenantFilterMethod.Invoke(this, [modelBuilder]);
@@ -65,12 +63,12 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
             entity.HasOne(e => e.Customer)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.Service)
+            entity.HasOne(e => e.Offering)
                 .WithMany()
                 .OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.CreatedByUser)
-               .WithMany()
-               .OnDelete(DeleteBehavior.SetNull);
+                .WithMany()
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Offering>(entity =>
@@ -91,7 +89,5 @@ public class LabDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
-    public DbSet<Offering> Services { get; set; }
+    public DbSet<Offering> Offerings { get; set; }
 }
-
-

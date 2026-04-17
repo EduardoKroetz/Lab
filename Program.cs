@@ -77,6 +77,11 @@ builder.Services.AddScoped<TenantService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AppointmentService>();
 
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddMaps(typeof(Program).Assembly);
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

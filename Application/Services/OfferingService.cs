@@ -1,4 +1,5 @@
-﻿using Lab.Api.Application.DTOs.Services;
+using AutoMapper;
+using Lab.Api.Application.DTOs.Offerings;
 using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Exceptions;
 using Lab.Api.Infrastructure.Data;
@@ -9,33 +10,31 @@ namespace Lab.Api.Application.Services;
 public class OfferingService
 {
     private readonly LabDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public OfferingService(LabDbContext dbContext)
+    public OfferingService(LabDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<List<GetOfferingDto>> GetListAsync()
     {
-        var offerings = await _dbContext.Services.AsNoTracking().ToListAsync();
+        var offerings = await _dbContext.Offerings.AsNoTracking().ToListAsync();
 
-        var dto = offerings.Select(s => new GetOfferingDto(s.Id, s.Name, s.Description, s.Price)).ToList();
-
-        return dto;
+        return offerings.Select(o => _mapper.Map<GetOfferingDto>(o)).ToList();
     }
 
     public async Task<GetOfferingDto> GetByIdAsync(Guid id)
     {
-        var offering = await _dbContext.Services.FindAsync(id);
+        var offering = await _dbContext.Offerings.FindAsync(id);
         if (offering == null)
             throw new NotFoundException("Oferta não encontrada.");
 
-        var dto = new GetOfferingDto(offering.Id, offering.Name, offering.Description, offering.Price);
-
-        return dto;
+        return _mapper.Map<GetOfferingDto>(offering);
     }
 
-    public async Task<GetOfferingDto> CreateAsync(UpsertServiceDto dto)
+    public async Task<GetOfferingDto> CreateAsync(UpsertOfferingDto dto)
     {
         var offering = new Offering
         {
@@ -44,17 +43,15 @@ public class OfferingService
             Price = dto.Price
         };
 
-        await _dbContext.Services.AddAsync(offering);
+        await _dbContext.Offerings.AddAsync(offering);
         await _dbContext.SaveChangesAsync();
 
-        var responseDto = new GetOfferingDto(offering.Id, offering.Name, offering.Description, offering.Price);
-
-        return responseDto;
+        return _mapper.Map<GetOfferingDto>(offering);
     }
 
-    public async Task<GetOfferingDto> UpdateAsync(Guid id, UpsertServiceDto dto)
+    public async Task<GetOfferingDto> UpdateAsync(Guid id, UpsertOfferingDto dto)
     {
-        var offering = await _dbContext.Services.FindAsync(id);
+        var offering = await _dbContext.Offerings.FindAsync(id);
         if (offering == null)
             throw new NotFoundException("Oferta não encontrada.");
 
@@ -64,19 +61,16 @@ public class OfferingService
 
         await _dbContext.SaveChangesAsync();
 
-        var responseDto = new GetOfferingDto(offering.Id, offering.Name, offering.Description, offering.Price);
-
-        return responseDto;
+        return _mapper.Map<GetOfferingDto>(offering);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var offering = await _dbContext.Services.FindAsync(id);
+        var offering = await _dbContext.Offerings.FindAsync(id);
         if (offering == null)
             throw new NotFoundException("Oferta não encontrada.");
 
-        _dbContext.Services.Remove(offering);
-
+        _dbContext.Offerings.Remove(offering);
         await _dbContext.SaveChangesAsync();
     }
 }

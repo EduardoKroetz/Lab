@@ -22,7 +22,7 @@ namespace Lab.Api.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Lab.Api.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +88,7 @@ namespace Lab.Api.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Appointment", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Appointment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -115,7 +115,7 @@ namespace Lab.Api.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid?>("ServiceId")
+                    b.Property<Guid?>("OfferingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("StartDate")
@@ -130,14 +130,14 @@ namespace Lab.Api.Data.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("OfferingId");
 
                     b.HasIndex("TenantId");
 
                     b.ToTable("Appointments");
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Customer", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -178,7 +178,7 @@ namespace Lab.Api.Data.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Service", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Offering", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -203,10 +203,10 @@ namespace Lab.Api.Data.Migrations
 
                     b.HasIndex("TenantId");
 
-                    b.ToTable("Services");
+                    b.ToTable("Offerings");
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Tenant", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -352,25 +352,25 @@ namespace Lab.Api.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Appointment", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Appointment", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.ApplicationUser", "CreatedByUser")
+                    b.HasOne("Lab.Api.Domain.Entities.ApplicationUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Lab.Api.Entities.Customer", "Customer")
+                    b.HasOne("Lab.Api.Domain.Entities.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lab.Api.Entities.Service", "Service")
+                    b.HasOne("Lab.Api.Domain.Entities.Offering", "Offering")
                         .WithMany()
-                        .HasForeignKey("ServiceId")
+                        .HasForeignKey("OfferingId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("Lab.Api.Entities.Tenant", null)
+                    b.HasOne("Lab.Api.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -380,21 +380,21 @@ namespace Lab.Api.Data.Migrations
 
                     b.Navigation("Customer");
 
-                    b.Navigation("Service");
+                    b.Navigation("Offering");
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Customer", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Customer", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.Tenant", null)
+                    b.HasOne("Lab.Api.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Lab.Api.Entities.Service", b =>
+            modelBuilder.Entity("Lab.Api.Domain.Entities.Offering", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.Tenant", null)
+                    b.HasOne("Lab.Api.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -412,7 +412,7 @@ namespace Lab.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Lab.Api.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -421,7 +421,7 @@ namespace Lab.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Lab.Api.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -436,7 +436,7 @@ namespace Lab.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lab.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Lab.Api.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -445,7 +445,7 @@ namespace Lab.Api.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Lab.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Lab.Api.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

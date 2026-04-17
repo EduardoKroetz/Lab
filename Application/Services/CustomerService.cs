@@ -1,3 +1,4 @@
+using AutoMapper;
 using Lab.Api.Application.DTOs.Customers;
 using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Exceptions;
@@ -9,19 +10,19 @@ namespace Lab.Api.Application.Services;
 public class CustomerService
 {
     private readonly LabDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public CustomerService(LabDbContext dbContext)
+    public CustomerService(LabDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<List<GetCustomerDto>> GetListAsync()
     {
         var customers = await _dbContext.Customers.AsNoTracking().ToListAsync();
 
-        return customers
-            .Select(c => new GetCustomerDto(c.Id, c.Name, c.CpfCnpj, c.Email, c.PhoneNumber))
-            .ToList();
+        return customers.Select(c => _mapper.Map<GetCustomerDto>(c)).ToList();
     }
 
     public async Task<GetCustomerDto> GetByIdAsync(Guid id)
@@ -30,16 +31,12 @@ public class CustomerService
         if (customer == null)
             throw new NotFoundException("Cliente não encontrado.");
 
-        return new GetCustomerDto(customer.Id, customer.Name, customer.CpfCnpj, customer.Email, customer.PhoneNumber);
+        return _mapper.Map<GetCustomerDto>(customer);
     }
 
     public async Task<GetCustomerDto> CreateAsync(UpsertCustomerDto dto)
     {
-        if (await _dbContext.Customers.AnyAsync(c => c.Email == dto.Email))
-            throw new BadRequestException("Já possui um cliente com este email.");
-
-        if (await _dbContext.Customers.AnyAsync(c => c.CpfCnpj == dto.CpfCnpj))
-            throw new BadRequestException("Já possui um cliente com este CPF/CNPJ.");
+        await ValidateAsync(dto);
 
         var customer = new Customer
         {
@@ -52,16 +49,12 @@ public class CustomerService
         await _dbContext.Customers.AddAsync(customer);
         await _dbContext.SaveChangesAsync();
 
-        return new GetCustomerDto(customer.Id, customer.Name, customer.CpfCnpj, customer.Email, customer.PhoneNumber);
+        return _mapper.Map<GetCustomerDto>(customer);
     }
 
     public async Task<GetCustomerDto> UpdateAsync(Guid id, UpsertCustomerDto dto)
     {
-        if (await _dbContext.Customers.AnyAsync(c => c.Email == dto.Email && c.Id != id))
-            throw new BadRequestException("Já possui um cliente com este e-mail.");
-
-        if (await _dbContext.Customers.AnyAsync(c => c.CpfCnpj == dto.CpfCnpj && c.Id != id))
-            throw new BadRequestException("Já possui um cliente com este CPF/CNPJ.");
+        await ValidateAsync(dto, id);
 
         var customer = await _dbContext.Customers.FindAsync(id);
         if (customer == null)
@@ -74,7 +67,7 @@ public class CustomerService
 
         await _dbContext.SaveChangesAsync();
 
-        return new GetCustomerDto(customer.Id, customer.Name, customer.CpfCnpj, customer.Email, customer.PhoneNumber);
+        return _mapper.Map<GetCustomerDto>(customer);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -85,5 +78,14 @@ public class CustomerService
 
         _dbContext.Customers.Remove(customer);
         await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task ValidateAsync(UpsertCustomerDto dto, Guid? id = null)
+    {
+        if (await _dbContext.Customers.AnyAsync(c => c.Email == dto.Email && c.Id != id))
+            throw new BadRequestException("Já existe um cliente com este e-mail.");
+
+        if (await _dbContext.Customers.AnyAsync(c => c.CpfCnpj == dto.CpfCnpj && c.Id != id))
+            throw new BadRequestException("Já existe um cliente com este CPF/CNPJ.");
     }
 }

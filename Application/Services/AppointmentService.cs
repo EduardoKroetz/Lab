@@ -1,3 +1,4 @@
+using AutoMapper;
 using Lab.Api.Application.DTOs.Appointments;
 using Lab.Api.Domain.Entities;
 using Lab.Api.Domain.Exceptions;
@@ -9,10 +10,12 @@ namespace Lab.Api.Application.Services;
 public class AppointmentService
 {
     private readonly LabDbContext _dbContext;
+    private readonly IMapper _mapper;
 
-    public AppointmentService(LabDbContext dbContext)
+    public AppointmentService(LabDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
+        _mapper = mapper;
     }
 
     public async Task<List<GetAppointmentDto>> GetListAsync()
@@ -20,11 +23,11 @@ public class AppointmentService
         var appointments = await _dbContext.Appointments
             .AsNoTracking()
             .Include(a => a.Customer)
-            .Include(a => a.Service)
+            .Include(a => a.Offering)
             .Include(a => a.CreatedByUser)
             .ToListAsync();
 
-        return appointments.Select(MapToDto).ToList();
+        return appointments.Select(a => _mapper.Map<GetAppointmentDto>(a)).ToList();
     }
 
     public async Task<GetAppointmentDto> GetByIdAsync(Guid id)
@@ -32,14 +35,14 @@ public class AppointmentService
         var appointment = await _dbContext.Appointments
             .AsNoTracking()
             .Include(a => a.Customer)
-            .Include(a => a.Service)
+            .Include(a => a.Offering)
             .Include(a => a.CreatedByUser)
             .FirstOrDefaultAsync(a => a.Id == id);
 
         if (appointment == null)
             throw new NotFoundException("Agendamento não encontrado.");
 
-        return MapToDto(appointment);
+        return _mapper.Map<GetAppointmentDto>(appointment);
     }
 
     public async Task<GetAppointmentDto> CreateAsync(UpsertAppointmentDto dto, Guid createdByUserId)
@@ -51,7 +54,7 @@ public class AppointmentService
             Name = dto.Name,
             Description = dto.Description,
             CustomerId = dto.CustomerId,
-            ServiceId = dto.ServiceId,
+            OfferingId = dto.OfferingId,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
             CreatedBy = createdByUserId,
@@ -74,7 +77,7 @@ public class AppointmentService
         appointment.Name = dto.Name;
         appointment.Description = dto.Description;
         appointment.CustomerId = dto.CustomerId;
-        appointment.ServiceId = dto.ServiceId;
+        appointment.OfferingId = dto.OfferingId;
         appointment.StartDate = dto.StartDate;
         appointment.EndDate = dto.EndDate;
 
@@ -98,8 +101,8 @@ public class AppointmentService
         if (!await _dbContext.Customers.AnyAsync(c => c.Id == dto.CustomerId))
             throw new BadRequestException("Cliente não encontrado.");
 
-        if (dto.ServiceId.HasValue && !await _dbContext.Services.AnyAsync(s => s.Id == dto.ServiceId.Value))
-            throw new BadRequestException("Serviço não encontrado.");
+        if (dto.OfferingId.HasValue && !await _dbContext.Offerings.AnyAsync(o => o.Id == dto.OfferingId.Value))
+            throw new BadRequestException("Oferta não encontrada.");
 
         if (dto.StartDate >= dto.EndDate)
             throw new BadRequestException("A data de início deve ser anterior à data de término.");
@@ -118,21 +121,5 @@ public class AppointmentService
 
             throw new BadRequestException(message);
         }
-    }
-
-    private static GetAppointmentDto MapToDto(Appointment appointment)
-    {
-        return new GetAppointmentDto(
-            appointment.Id,
-            appointment.Name,
-            appointment.Description,
-            appointment.CustomerId,
-            appointment.Customer.Name,
-            appointment.ServiceId,
-            appointment.Service?.Name,
-            appointment.StartDate,
-            appointment.EndDate,
-            appointment.CreatedBy,
-            appointment.CreatedByUser?.UserName);
     }
 }

@@ -1,5 +1,5 @@
-﻿using Lab.Api.Application.DTOs;
-using Lab.Api.Application.DTOs.Services;
+using Lab.Api.Application.DTOs;
+using Lab.Api.Application.DTOs.Offerings;
 using Lab.Api.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,8 +26,8 @@ public class OfferingsController : ControllerBase
         return Ok(new ResponseDto(dto));
     }
 
-    [HttpGet("{id:guid}", Name = nameof(GetServiceByIdAsync))]
-    public async Task<IActionResult> GetServiceByIdAsync(Guid id)
+    [HttpGet("{id:guid}", Name = nameof(GetOfferingByIdAsync))]
+    public async Task<IActionResult> GetOfferingByIdAsync(Guid id)
     {
         var dto = await _offeringService.GetByIdAsync(id);
 
@@ -35,15 +35,15 @@ public class OfferingsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostAsync([FromBody] UpsertServiceDto dto)
+    public async Task<IActionResult> PostAsync([FromBody] UpsertOfferingDto dto)
     {
         var responseDto = await _offeringService.CreateAsync(dto);
 
-        return CreatedAtRoute(nameof(GetServiceByIdAsync), new { id = responseDto.Id }, new ResponseDto(responseDto));
+        return CreatedAtRoute(nameof(GetOfferingByIdAsync), new { id = responseDto.Id }, new ResponseDto(responseDto));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpsertServiceDto dto)
+    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpsertOfferingDto dto)
     {
         var responseDto = await _offeringService.UpdateAsync(id, dto);
 
