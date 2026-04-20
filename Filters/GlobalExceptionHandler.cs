@@ -2,7 +2,7 @@ using Lab.Api.Application.DTOs;
 using Lab.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace Lab.Api.Common.Filters;
+namespace Lab.Api.Filters;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {

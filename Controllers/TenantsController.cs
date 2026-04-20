@@ -1,6 +1,4 @@
-using Lab.Api.Application.DTOs;
-using Lab.Api.Application.DTOs.Tenants;
-using Lab.Api.Application.Services;
+using Lab.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lab.Api.Controllers;
@@ -16,10 +14,28 @@ public class TenantsController : ControllerBase
         _tenantService = tenantService;
     }
 
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentAsync()
+    {
+        var tenantId = User.GetTenantId();
+
+        var responseDto = await _tenantService.GetCurrentAsync(tenantId);
+
+        return Ok(new ResponseDto(responseDto));
+    }
+
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertTenantDto dto)
     {
         var responseDto = await _tenantService.CreateAsync(dto);
+
+        return Ok(new ResponseDto(responseDto));
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpsertTenantDto dto)
+    {
+        var responseDto = await _tenantService.UpdateAsync(id, dto);
 
         return Ok(new ResponseDto(responseDto));
     }

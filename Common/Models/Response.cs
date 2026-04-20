@@ -1,25 +1,25 @@
-﻿namespace Lab.Api.Application.DTOs;
+﻿namespace Lab.Api.Common.Models;
 
-public class ResponseDto
+public class Response
 {
-    public ResponseDto(string errorMessage)
+    public Response(string errorMessage)
     {
         Errors = [errorMessage];
         Data = null;
     }
 
-    public ResponseDto(List<string> errors)
+    public Response(List<string> errors)
     {
         Errors = errors;
         Data = null;
     }
 
-    public ResponseDto(object data)
+    public Response(object data)
     {
         Data = data;
     }
 
-    public ResponseDto()
+    public Response()
     {
         Data = null;
     }

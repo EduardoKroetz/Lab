@@ -1,6 +1,6 @@
 ﻿using Lab.Api.Application.DTOs;
 using Lab.Api.Application.Services;
-using Lab.Api.Common.Extensions;
+using Lab.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
