@@ -34,20 +34,20 @@ public class AuthService
         return Result<LoginUserResponse>.Success(response);
     }
 
-    public async Task<Result<CreateUserResponse>> RegisterAsync(RegisterUserRequest request)
+    public async Task<Result<RegisterUserResponse>> RegisterAsync(RegisterUserRequest request)
     {
         if (!await _dbContext.Tenants.AnyAsync(t => t.Id == request.TenantId))
-            return Result<CreateUserResponse>.Failure("Tenant não encontrado.");
+            return Result<RegisterUserResponse>.Failure("Tenant não encontrado.");
 
         var result = await _identityService.CreateUserAsync(request.Email, request.Password, request.TenantId);
         if (!result.Succeeded)
-            return Result<CreateUserResponse>.Failure(result.Errors);
+            return Result<RegisterUserResponse>.Failure(result.Errors);
 
-        var response = new CreateUserResponse
+        var response = new RegisterUserResponse
         {
             UserId = result.Value.Id
         };
 
-        return Result<CreateUserResponse>.Success(response);
+        return Result<RegisterUserResponse>.Success(response);
     }
 }

@@ -5,6 +5,7 @@ using Lab.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 
 namespace Lab.Infrastructure.Data;
@@ -88,12 +89,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<Tenant>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(entity => entity.Name).IsRequired().HasMaxLength(100);
+        });
     }
 
     private void SetTenantFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : TenantEntity
     {
         modelBuilder.Entity<TEntity>()
             .HasQueryFilter(e => e.TenantId == TenantId);
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return await Database.BeginTransactionAsync(cancellationToken);
     }
 
     public DbSet<Tenant> Tenants { get; set; }

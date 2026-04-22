@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Itens de Solução/">
+    <File Path="Readme.md" />
+  </Folder>
   <Project Path="Lab.Api/Lab.Api.csproj" />
   <Project Path="Lab.Application/Lab.Application.csproj" Id="49749c20-2036-4fa6-af5f-7e0e9f1c1203" />
   <Project Path="Lab.Domain/Lab.Domain.csproj" />

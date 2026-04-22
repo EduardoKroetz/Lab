@@ -30,6 +30,13 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+        builder.Services.Configure<IdentityOptions>(opt =>
+        {
+            opt.Password.RequireUppercase = false;
+            opt.Password.RequireLowercase = false;
+            opt.Password.RequiredLength = 6;
+        });
+
         var key = builder.Configuration["Jwt:Key"] ?? throw new ArgumentNullException("Invalid JWT key");
 
         builder.Services.AddAuthentication(opt =>

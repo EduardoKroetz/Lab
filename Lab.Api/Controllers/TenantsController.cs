@@ -27,17 +27,17 @@ public class TenantsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostAsync([FromBody] UpsertTenantRequest request)
+    public async Task<IActionResult> PostAsync([FromBody] InsertTenantRequest request)
     {
         var result = await _tenantService.CreateAsync(request);
 
         return result.ToActionResult();
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpsertTenantRequest request)
+    [HttpPut("current")]
+    public async Task<IActionResult> PutAsync([FromBody] UpdateCurrentTenantRequest request)
     {
-        var result = await _tenantService.UpdateAsync(id, request);
+        var result = await _tenantService.UpdateCurrentAsync(request);
 
         return result.ToActionResult();
     }
