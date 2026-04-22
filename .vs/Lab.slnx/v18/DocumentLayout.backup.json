@@ -1,0 +1,96 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Dev\\Projects\\Lab\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8259FB6F-FB86-4C4A-49AC-90753C87D227}|Lab.Api\\Lab.Api.csproj|d:\\dev\\projects\\lab\\lab.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8259FB6F-FB86-4C4A-49AC-90753C87D227}|Lab.Api\\Lab.Api.csproj|solutionrelative:lab.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49749C20-2036-4FA6-AF5F-7E0E9F1C1203}|Lab.Application\\Lab.Application.csproj|d:\\dev\\projects\\lab\\lab.application\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49749C20-2036-4FA6-AF5F-7E0E9F1C1203}|Lab.Application\\Lab.Application.csproj|solutionrelative:lab.application\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49749C20-2036-4FA6-AF5F-7E0E9F1C1203}|Lab.Application\\Lab.Application.csproj|d:\\dev\\projects\\lab\\lab.application\\mappers\\mappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49749C20-2036-4FA6-AF5F-7E0E9F1C1203}|Lab.Application\\Lab.Application.csproj|solutionrelative:lab.application\\mappers\\mappingprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F199DBB9-7EA2-4187-B48F-1C4814EAF86D}|Lab.Infrastructure\\Lab.Infrastructure.csproj|d:\\dev\\projects\\lab\\lab.infrastructure\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F199DBB9-7EA2-4187-B48F-1C4814EAF86D}|Lab.Infrastructure\\Lab.Infrastructure.csproj|solutionrelative:lab.infrastructure\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Dev\\Projects\\Lab\\Lab.Api\\Program.cs",
+              "RelativeDocumentMoniker": "Lab.Api\\Program.cs",
+              "ToolTip": "D:\\Dev\\Projects\\Lab\\Lab.Api\\Program.cs",
+              "RelativeToolTip": "Lab.Api\\Program.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAAACwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T00:55:05.005Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MappingProfile.cs",
+              "DocumentMoniker": "D:\\Dev\\Projects\\Lab\\Lab.Application\\Mappers\\MappingProfile.cs",
+              "RelativeDocumentMoniker": "Lab.Application\\Mappers\\MappingProfile.cs",
+              "ToolTip": "D:\\Dev\\Projects\\Lab\\Lab.Application\\Mappers\\MappingProfile.cs",
+              "RelativeToolTip": "Lab.Application\\Mappers\\MappingProfile.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T00:54:16.898Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\Dev\\Projects\\Lab\\Lab.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Lab.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "D:\\Dev\\Projects\\Lab\\Lab.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Lab.Infrastructure\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T00:48:25.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "D:\\Dev\\Projects\\Lab\\Lab.Application\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "Lab.Application\\Services\\AuthService.cs",
+              "ToolTip": "D:\\Dev\\Projects\\Lab\\Lab.Application\\Services\\AuthService.cs",
+              "RelativeToolTip": "Lab.Application\\Services\\AuthService.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAowCQAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T00:39:54.173Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
