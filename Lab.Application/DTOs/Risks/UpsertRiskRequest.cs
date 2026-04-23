@@ -1,0 +1,28 @@
+using Lab.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace Lab.Application.DTOs.Risks;
+
+public class UpsertRiskRequest
+{
+    [Required(ErrorMessage = "Informe o ID do ativo.")]
+    public Guid AssetId { get; set; }
+
+    [Required(ErrorMessage = "Informe o ID da ameaça.")]
+    public Guid ThreatId { get; set; }
+
+    [Required(ErrorMessage = "Informe o ID da vulnerabilidade.")]
+    public Guid VulnerabilityId { get; set; }
+
+    [Range(1, 5, ErrorMessage = "A probabilidade deve estar entre 1 e 5.")]
+    public int Probability { get; set; }
+
+    [Range(1, 5, ErrorMessage = "O impacto deve estar entre 1 e 5.")]
+    public int Impact { get; set; }
+
+    [Required(ErrorMessage = "Informe o nível.")]
+    public ERiskLevel Level { get; set; }
+
+    [Required(ErrorMessage = "Informe o status.")]
+    public ERiskStatus Status { get; set; }
+}
