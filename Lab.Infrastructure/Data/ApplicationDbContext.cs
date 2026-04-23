@@ -45,56 +45,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             }
         }
 
-        modelBuilder.Entity<Customer>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.CpfCnpj).IsRequired(false).HasMaxLength(20);
-            entity.Property(e => e.Email).IsRequired(false).HasMaxLength(100);
-            entity.Property(e => e.PhoneNumber).IsRequired(false).HasMaxLength(20);
-        });
-
-        modelBuilder.Entity<Customer>().HasIndex(e => e.CpfCnpj).IsUnique();
-        modelBuilder.Entity<Customer>().HasIndex(e => e.Email).IsUnique();
-
-        modelBuilder.Entity<Appointment>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Description).HasMaxLength(500);
-            entity.HasOne(e => e.Customer)
-                .WithMany()
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.Offering)
-                .WithMany()
-                .OnDelete(DeleteBehavior.SetNull);
-            entity.HasOne<ApplicationUser>()
-                .WithMany()
-                .HasForeignKey(x => x.CreatedBy)
-                .OnDelete(DeleteBehavior.SetNull);
-        });
-
-        modelBuilder.Entity<Offering>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.Price).IsRequired(false).HasColumnType("decimal(18,2)");
-        });
-
-        modelBuilder.Entity<ApplicationUser>(entity =>
-        {
-            entity.HasOne<Tenant>()
-                .WithMany()
-                .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
-        modelBuilder.Entity<Tenant>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(entity => entity.Name).IsRequired().HasMaxLength(100);
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
     private void SetTenantFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : TenantEntity
@@ -109,7 +60,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     }
 
     public DbSet<Tenant> Tenants { get; set; }
+
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Offering> Offerings { get; set; }
+
+    public DbSet<Asset> Assets { get; set; }
+    public DbSet<Threat> Threats { get; set; }
+    public DbSet<Vulnerability> Vulnerabilities { get; set; }
+    public DbSet<Risk> Risks { get; set; }
+    public DbSet<Control> Controls { get; set; }
+    public DbSet<RiskControl> RiskControls { get; set; }
+    public DbSet<Incident> Incidents { get; set; }
+    public DbSet<IncidentImpact> IncidentImpacts { get; set; }
 }

@@ -5,10 +5,10 @@ namespace Lab.Application.DTOs.Appointments;
 public class UpsertAppointmentRequest
 {
     [Required(ErrorMessage = "Informe o nome.")]
-    [MaxLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
+    [MaxLength(100, ErrorMessage = "O nome deve ter no máximo {1} caracteres.")]
     public string Name { get; set; }
 
-    [MaxLength(500, ErrorMessage = "A descrição deve ter no máximo 500 caracteres.")]
+    [MaxLength(500, ErrorMessage = "A descrição deve ter no máximo {1} caracteres.")]
     public string? Description { get; set; }
 
     [Required(ErrorMessage = "Informe o ID do cliente.")]

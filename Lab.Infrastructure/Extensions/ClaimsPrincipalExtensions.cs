@@ -1,4 +1,4 @@
-﻿using Lab.Domain.Constants;
+﻿using Lab.Infrastructure.Constants;
 using System.Security;
 using System.Security.Claims;
 

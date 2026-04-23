@@ -1,4 +1,4 @@
-﻿namespace Lab.Domain.Constants;
+﻿namespace Lab.Infrastructure.Constants;
 
 public static class AppClaimTypes
 {

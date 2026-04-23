@@ -1,5 +1,5 @@
 ﻿using Lab.Application.Common.Interfaces;
-using Lab.Domain.Constants;
+using Lab.Infrastructure.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
