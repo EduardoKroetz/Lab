@@ -13,5 +13,8 @@ public class ThreatMapping : IEntityTypeConfiguration<Threat>
         builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Description).HasMaxLength(256);
         builder.Property(x => x.Category).HasConversion(new EnumToStringConverter<EThreatCategory>());
+
+        // Unique name per tenant
+        builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
     }
 }

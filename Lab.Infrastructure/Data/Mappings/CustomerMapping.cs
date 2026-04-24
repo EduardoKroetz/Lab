@@ -13,7 +13,6 @@ public class CustomerMapping : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.Email).IsRequired(false).HasMaxLength(100);
         builder.Property(e => e.PhoneNumber).IsRequired(false).HasMaxLength(20);
 
-
         builder.HasIndex(e => e.CpfCnpj).IsUnique();
         builder.HasIndex(e => e.Email).IsUnique();
     }

@@ -6,3 +6,10 @@
 - Um tenant representa um negócio (ex: barbearia, clínica)
 - Isolamento lógico de dados por tenant
 - Todas as operações devem respeitar o contexto do tenant
+
+## Risk Management
+
+Asset
+- Não permitir exclusão se houver Risks vinculados
+- Criticality deve influenciar cálculo de risco (ex: multiplicador ou peso)
+

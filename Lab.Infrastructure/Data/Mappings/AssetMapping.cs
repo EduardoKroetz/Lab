@@ -14,5 +14,8 @@ public class AssetMapping : IEntityTypeConfiguration<Asset>
         builder.Property(x => x.Description).HasMaxLength(256);
         builder.Property(x => x.Type).HasConversion(new EnumToStringConverter<EAssetType>());
         builder.Property(x => x.Criticality).HasConversion(new EnumToStringConverter<EAssetCriticality>());
+
+        // Unique name per tenant
+        builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
     }
 }

@@ -11,24 +11,31 @@ public class RiskMapping : IEntityTypeConfiguration<Risk>
     public void Configure(EntityTypeBuilder<Risk> builder)
     {
         builder.HasOne(x => x.Asset)
-            .WithMany()
+            .WithMany(x => x.Risks)
             .HasForeignKey(x => x.AssetId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Threat)
-            .WithMany()
+            .WithMany(x => x.Risks)
+            .IsRequired()
             .HasForeignKey(x => x.ThreatId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Vulnerability)
-            .WithMany()
+            .WithMany(x => x.Risks)
             .HasForeignKey(x => x.VulnerabilityId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(x => x.AssetId).IsRequired();
+        builder.Property(x => x.ThreatId).IsRequired();
+        builder.Property(x => x.VulnerabilityId).IsRequired();
 
         builder.Property(x => x.Probability).IsRequired();
         builder.Property(x => x.Impact).IsRequired();
 
-        builder.Property(x => x.Level).HasConversion(new EnumToStringConverter<ERiskLevel>());
         builder.Property(x => x.Status).HasConversion(new EnumToStringConverter<ERiskStatus>());
+
+        // Unique name per tenant
+        builder.HasIndex(x => new { x.TenantId, x.AssetId, x.ThreatId, x.VulnerabilityId }).IsUnique();
     }
 }

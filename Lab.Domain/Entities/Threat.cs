@@ -17,6 +17,8 @@ public class Threat : TenantEntity
     public string Description { get; private set; }
     public EThreatCategory Category { get; private set; }
 
+    public List<Risk> Risks { get; private set; }
+
     public void Update(string name, string description, EThreatCategory category)
     {
         Name = name;

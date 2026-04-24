@@ -1,23 +1,20 @@
 ﻿using Lab.Domain.Common;
+using Lab.Domain.Common.Models;
 using Lab.Domain.Enums;
 
 namespace Lab.Domain.Entities;
 
-
 public class Risk : TenantEntity
 {
     internal Risk() { } // EF
-    public Risk(Asset asset, Threat threat, Vulnerability vulnerability, int probability, int impact, ERiskLevel level, ERiskStatus status)
+    private Risk(Guid assetId, Guid threatId, Guid vulnerabilityId, int probability, int impact)
     {
-        Status = status;
-        Asset = asset;
-        Threat = threat;
-        Vulnerability = vulnerability;
+        Status = ERiskStatus.Identified;
+        AssetId = assetId;
+        ThreatId = threatId;
+        VulnerabilityId = vulnerabilityId;
         Probability = probability;
         Impact = impact;
-        Level = level;
-
-        Validate();
     }
 
     public Guid AssetId { get; private set; }
@@ -27,34 +24,75 @@ public class Risk : TenantEntity
     public int Probability { get; private set; }
     public int Impact { get; private set; }
 
-    public ERiskLevel Level { get; private set; }
     public ERiskStatus Status { get; private set; }
+
+    public ERiskTreatmentStrategy TreatmentStrategy { get; private set; }
+    public string? TreatmentDescription { get; private set; }
 
     public Asset Asset { get; private set; }
     public Threat Threat { get; private set; }
     public Vulnerability Vulnerability { get; private set; }
 
     public int Score => Probability * Impact;
-
-    public void Update(Asset asset, Threat threat, Vulnerability vulnerability, int probability, int impact, ERiskLevel level, ERiskStatus status)
+    public ERiskLevel Level => Score switch
     {
-        Status = status;
-        Asset = asset;
-        Threat = threat;
-        Vulnerability = vulnerability;
-        Probability = probability;
-        Impact = impact;
-        Level = level;
+        >= 20 => ERiskLevel.Critical,
+        >= 15 => ERiskLevel.High,
+        >= 10 => ERiskLevel.Medium,
+        _ => ERiskLevel.Low
+    };
 
-        Validate();
+    public List<RiskControl> RiskControls { get; private set; }
+
+    public static Result<Risk> Create(Guid assetId, Guid threatId, Guid vulnerabilityId, int probability, int impact)
+    {
+        var result = ValidateValues(probability, impact);
+        if (!result.Succeeded)
+            return Result<Risk>.Failure(result.Errors);
+
+        var newRisk = new Risk(assetId, threatId, vulnerabilityId, probability, impact);
+
+        return Result<Risk>.Success(newRisk);
     }
 
-    private void Validate()
-    {
-        if (Probability <= 0 || Probability > 5)
-            throw new InvalidOperationException("A probabilidade deve estar entre 0 e 5");
 
-        if (Impact <= 0 || Impact > 5)
-            throw new InvalidOperationException("O impacto deve estar entre 0 e 5");
+    public Result Update(Guid assetId, Guid threatId, Guid vulnerabilityId, int probability, int impact)
+    {
+        var result = ValidateValues(probability, impact);
+        if (!result.Succeeded)
+            return result;
+
+        AssetId = assetId;
+        ThreatId = threatId;
+        VulnerabilityId = vulnerabilityId;
+        Probability = probability;
+        Impact = impact;
+
+        return Result.Success();
+    }
+
+
+    private static Result ValidateValues(int probability, int impact)
+    {
+        var errors = new List<string>();
+
+        if (probability <= 0 || probability > 5)
+            errors.Add("A probabilidade deve estar entre 0 e 5");
+
+        if (impact <= 0 || impact > 5)
+            errors.Add("O impacto deve estar entre 0 e 5");
+
+        if (errors.Any())
+            return Result.Failure(errors);
+
+        return Result.Success();
+    }
+
+    public Result ChangeStatus(ERiskStatus newStatus)
+    {
+        if (Status != ERiskStatus.Identified && newStatus == ERiskStatus.Identified)
+            return Result.Failure("O status não pode voltar para identificado.");
+
+        return Result.Success();
     }
 }

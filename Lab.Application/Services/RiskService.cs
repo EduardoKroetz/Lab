@@ -18,6 +18,18 @@ public class RiskService
         _mapper = mapper;
     }
 
+    private async Task<bool> RiskCombinationExistsAsync(Guid assetId, Guid threatId, Guid vulnerabilityId, Guid? riskId = null)
+    {
+        var alreadyExists = await _dbContext.Risks.AnyAsync(r =>
+            (r.Id != riskId) &&
+            (r.AssetId == assetId &&
+            r.ThreatId == threatId &&
+            r.VulnerabilityId == vulnerabilityId)
+        );
+
+        return alreadyExists;
+    }
+
     public async Task<Result<List<GetRiskResponse>>> GetListAsync()
     {
         var risks = await _dbContext.Risks
@@ -61,7 +73,15 @@ public class RiskService
         if (vulnerability == null)
             return Result<GetRiskResponse>.Failure("Vulnerabilidade não encontrada.");
 
-        var risk = new Risk(asset, threat, vulnerability, request.Probability, request.Impact, request.Level, request.Status);
+        var combinationExists = await RiskCombinationExistsAsync(asset.Id, threat.Id, vulnerability.Id);
+        if (combinationExists)
+            return Result<GetRiskResponse>.Failure("Já existe um risco com a combinação de ativo, ameaça e vulnerabilidade.");
+
+        var createResult = Risk.Create(request.AssetId, request.ThreatId, request.VulnerabilityId, request.Probability, request.Impact, request.Status);
+        if (!createResult.Succeeded)
+            return Result<GetRiskResponse>.Failure(createResult.Errors);
+
+        var risk = createResult.Value;
 
         await _dbContext.Risks.AddAsync(risk);
         await _dbContext.SaveChangesAsync();
@@ -87,7 +107,17 @@ public class RiskService
         if (risk == null)
             return Result<GetRiskResponse>.Failure("Risco não encontrado.");
 
-        risk.Update(asset, threat, vulnerability, request.Probability, request.Impact, request.Level, request.Status);
+        var combinationExists = await RiskCombinationExistsAsync(asset.Id, threat.Id, vulnerability.Id, risk.Id);
+        if (combinationExists)
+            return Result<GetRiskResponse>.Failure("Já existe um risco com a combinação de ativo, ameaça e vulnerabilidade.");
+
+        var updateResult = risk.Update(request.AssetId, request.ThreatId, request.VulnerabilityId, request.Probability, request.Impact);
+        if (!updateResult.Succeeded)
+            return Result<GetRiskResponse>.Failure(updateResult.Errors);
+
+        var changeStatusResult = risk.ChangeStatus(request.Status);
+        if (!changeStatusResult.Succeeded)
+            return Result<GetRiskResponse>.Failure(changeStatusResult.Errors);
 
         await _dbContext.SaveChangesAsync();
 

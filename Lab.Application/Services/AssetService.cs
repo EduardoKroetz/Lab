@@ -66,9 +66,12 @@ public class AssetService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var asset = await _dbContext.Assets.FindAsync(id);
+        var asset = await _dbContext.Assets.Include(x => x.Risks).FirstOrDefaultAsync(x => x.Id == id);
         if (asset == null)
             return Result.Failure("Ativo não encontrado.");
+
+        if (asset.Risks.Count > 0)
+            return Result.Failure("Este ativo não pode ser excluído enquanto houver riscos vinculados.");
 
         _dbContext.Assets.Remove(asset);
         await _dbContext.SaveChangesAsync();

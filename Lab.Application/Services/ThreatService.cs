@@ -66,9 +66,12 @@ public class ThreatService
 
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var threat = await _dbContext.Threats.FindAsync(id);
+        var threat = await _dbContext.Threats.Include(x => x.Risks).FirstOrDefaultAsync(x => x.Id == id);
         if (threat == null)
             return Result.Failure("Ameaça não encontrada.");
+
+        if (threat.Risks.Count > 0)
+            return Result.Failure("Esta ameaça não pode ser excluída enquanto houver riscos vinculados.");
 
         _dbContext.Threats.Remove(threat);
         await _dbContext.SaveChangesAsync();
