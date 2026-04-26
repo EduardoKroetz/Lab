@@ -28,9 +28,12 @@ public class MappingProfile : Profile
 
         CreateMap<Control, GetControlResponse>();
         CreateMap<Customer, GetCustomerResponse>();
-        CreateMap<Incident, GetIncidentResponse>();
-        CreateMap<IncidentImpact, GetIncidentImpactResponse>()
-            .ForMember(dest => dest.IncidentDescription, opt => opt.MapFrom(src => src.Incident.Description));
+
+        CreateMap<Incident, GetIncidentDetailResponse>().ForMember(dest => dest.Impacts, opt => opt.MapFrom(src => src.IncidentImpacts));
+        CreateMap<Incident, GetIncidentListResponse>();
+
+        CreateMap<IncidentImpact, GetIncidentImpactResponse>().ForMember(dest => dest.IncidentDescription, opt => opt.MapFrom(src => src.Incident.Description));
+
         CreateMap<Offering, GetOfferingResponse>();
 
         CreateMap<Risk, GetRiskListResponse>()

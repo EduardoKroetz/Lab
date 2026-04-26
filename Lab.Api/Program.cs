@@ -47,7 +47,6 @@ builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<RiskService>();
 builder.Services.AddScoped<ControlService>();
 builder.Services.AddScoped<IncidentService>();
-builder.Services.AddScoped<IncidentImpactService>();
 builder.Services.AddScoped<TenantService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AppointmentService>();

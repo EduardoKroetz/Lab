@@ -59,6 +59,7 @@ public class RiskService
     public async Task<Result<List<GetRiskListResponse>>> GetListAsync()
     {
         var risks = await _dbContext.Risks
+            .AsNoTracking()
             .Include(x => x.RiskControls)
             .ProjectTo<GetRiskListResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();
@@ -69,6 +70,7 @@ public class RiskService
     public async Task<Result<GetRiskDetailResponse>> GetByIdAsync(Guid id)
     {
         var risk = await _dbContext.Risks
+            .AsNoTracking()
             .Include(x => x.RiskControls)
             .ProjectTo<GetRiskDetailResponse>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(risk => risk.Id == id);
@@ -194,6 +196,7 @@ public class RiskService
     public async Task<Result<List<GetRiskControlResponse>>> GetListControlsAsync(Guid riskId)
     {
         var riskControls = await _dbContext.RiskControls
+            .AsNoTracking()
             .Where(rc => rc.RiskId == riskId)
             .ProjectTo<GetRiskControlResponse>(_mapper.ConfigurationProvider)
             .ToListAsync();

@@ -1,4 +1,4 @@
-﻿using Lab.Domain.Entities;
+using Lab.Domain.Entities;
 using Lab.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,5 +18,10 @@ public class IncidentMapping : IEntityTypeConfiguration<Incident>
             .WithMany()
             .HasForeignKey(x => x.RelatedRiskId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(x => x.IncidentImpacts)
+            .WithOne(x => x.Incident)
+            .HasForeignKey(x => x.IncidentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,4 +1,5 @@
 using Lab.Api.Extensions;
+using Lab.Application.DTOs.IncidentImpacts;
 using Lab.Application.DTOs.Incidents;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -56,6 +57,30 @@ public class IncidentsController : ControllerBase
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
         var result = await _incidentService.DeleteAsync(id);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{incidentId:guid}/impacts")]
+    public async Task<IActionResult> AddImpactAsync([FromRoute] Guid incidentId, [FromBody] UpsertIncidentImpactRequest request)
+    {
+        var result = await _incidentService.AddImpactAsync(incidentId, request);
+
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{incidentId:guid}/impacts/{impactId:guid}")]
+    public async Task<IActionResult> RemoveImpactAsync([FromRoute] Guid incidentId, [FromRoute] Guid impactId)
+    {
+        var result = await _incidentService.RemoveImpactAsync(incidentId, impactId);
+
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{incidentId:guid}/impacts")]
+    public async Task<IActionResult> GetListImpactsAsync([FromRoute] Guid incidentId)
+    {
+        var result = await _incidentService.GetListImpactsAsync(incidentId);
 
         return result.ToActionResult();
     }

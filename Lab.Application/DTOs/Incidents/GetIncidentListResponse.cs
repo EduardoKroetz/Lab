@@ -2,7 +2,7 @@ using Lab.Domain.Enums;
 
 namespace Lab.Application.DTOs.Incidents;
 
-public class GetIncidentResponse
+public class GetIncidentListResponse
 {
     public Guid Id { get; set; }
     public string Description { get; set; } = null!;
