@@ -8,6 +8,5 @@ public class GetIncidentResponse
     public string Description { get; set; } = null!;
     public DateTime DateOccurred { get; set; }
     public Guid? RelatedRiskId { get; set; }
-    public int? RelatedRiskScore { get; set; }
     public EIncidentStatus Status { get; set; }
 }

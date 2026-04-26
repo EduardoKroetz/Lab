@@ -2,11 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Lab.Application.DTOs.RiskControls;
 
-public class UpsertRiskControlRequest
+public class InsertRiskControlRequest
 {
-    [Required(ErrorMessage = "Informe o ID do risco.")]
-    public Guid RiskId { get; set; }
-
     [Required(ErrorMessage = "Informe o ID do controle.")]
     public Guid ControlId { get; set; }
 

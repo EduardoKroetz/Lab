@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Lab.Infrastructure.Data.Mappings;
+namespace Lab.Infrastructure.Data.EntityConfigurations;
 
-public class ThreatMapping : IEntityTypeConfiguration<Threat>
+public class AssetMapping : IEntityTypeConfiguration<Asset>
 {
-    public void Configure(EntityTypeBuilder<Threat> builder)
+    public void Configure(EntityTypeBuilder<Asset> builder)
     {
         builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Description).HasMaxLength(256);
-        builder.Property(x => x.Category).HasConversion(new EnumToStringConverter<EThreatCategory>());
+        builder.Property(x => x.Type).HasConversion(new EnumToStringConverter<EAssetType>());
+        builder.Property(x => x.Criticality).HasConversion(new EnumToStringConverter<EAssetCriticality>());
 
         // Unique name per tenant
         builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();

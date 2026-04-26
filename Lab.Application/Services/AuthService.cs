@@ -1,6 +1,6 @@
 using Lab.Application.Common.Interfaces;
+using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Auth;
-using Lab.Domain.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lab.Application.Services;

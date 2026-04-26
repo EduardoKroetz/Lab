@@ -1,4 +1,4 @@
-﻿namespace Lab.Domain.Common.Models;
+﻿namespace Lab.Application.Common.Models;
 
 public class Result
 {

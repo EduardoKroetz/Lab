@@ -1,38 +1,32 @@
 ﻿using Lab.Domain.Common;
+using Lab.Domain.Enums;
 
 namespace Lab.Domain.Entities;
 
 public class RiskControl : TenantEntity
 {
     internal RiskControl() { } // EF
-    public RiskControl(Risk risk, Control control, int effectiveness)
+    public RiskControl(Guid riskId, Guid controlId, EControlType controlType, int effectiveness)
     {
-        Risk = risk;
-        Control = control;
-        Effectiveness = effectiveness;
+        RiskId = riskId;
+        ControlId = controlId;
+        ControlType = controlType;
 
-        Validate();
+        ChangeEffectiveness(effectiveness);
     }
 
-    public Guid RiskId { get; set; }
-    public Guid ControlId { get; set; }
-    public int? Effectiveness { get; set; }
+    public Guid RiskId { get; private set; }
+    public Guid ControlId { get; private set; }
+    public int Effectiveness { get; private set; }
+    public EControlType ControlType { get; private set; }
 
-    public Risk Risk { get; set; }
     public Control Control { get; set; }
 
-    public void Update(Risk risk, Control control, int effectiveness)
+    public void ChangeEffectiveness(int newEffectiveness)
     {
-        Risk = risk;
-        Control = control;
-        Effectiveness = effectiveness;
-
-        Validate();
-    }
-
-    private void Validate()
-    {
-        if (Effectiveness is not null && Effectiveness < 0 && Effectiveness > 100)
+        if (newEffectiveness < 0 || newEffectiveness > 100)
             throw new InvalidOperationException("A eficácia deve estar entre 0 e 100");
+
+        Effectiveness = newEffectiveness;
     }
 }

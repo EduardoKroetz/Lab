@@ -1,5 +1,5 @@
 ﻿using Lab.Application.Common.Interfaces;
-using Lab.Domain.Common.Models;
+using Lab.Application.Common.Models;
 using Lab.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

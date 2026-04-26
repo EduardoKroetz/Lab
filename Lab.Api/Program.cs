@@ -3,10 +3,17 @@ using Lab.Application.Common;
 using Lab.Application.Services;
 using Lab.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddOpenApi();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -39,7 +46,6 @@ builder.Services.AddScoped<VulnerabilityService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<RiskService>();
 builder.Services.AddScoped<ControlService>();
-builder.Services.AddScoped<RiskControlService>();
 builder.Services.AddScoped<IncidentService>();
 builder.Services.AddScoped<IncidentImpactService>();
 builder.Services.AddScoped<TenantService>();

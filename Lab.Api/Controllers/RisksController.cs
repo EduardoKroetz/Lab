@@ -1,4 +1,5 @@
 using Lab.Api.Extensions;
+using Lab.Application.DTOs.RiskControls;
 using Lab.Application.DTOs.Risks;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +36,7 @@ public class RisksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostAsync([FromBody] UpsertRiskRequest request)
+    public async Task<IActionResult> PostAsync([FromBody] InsertRiskRequest request)
     {
         var result = await _riskService.CreateAsync(request);
         if (!result.Succeeded)
@@ -45,7 +46,7 @@ public class RisksController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpsertRiskRequest request)
+    public async Task<IActionResult> PutAsync(Guid id, [FromBody] UpdateRiskRequest request)
     {
         var result = await _riskService.UpdateAsync(id, request);
 
@@ -56,6 +57,38 @@ public class RisksController : ControllerBase
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
         var result = await _riskService.DeleteAsync(id);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{riskId:guid}/controls")]
+    public async Task<IActionResult> AddControlAsync([FromRoute] Guid riskId, [FromBody] InsertRiskControlRequest request)
+    {
+        var result = await _riskService.AddControlAsync(riskId, request);
+
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{riskId:guid}/controls/{controlId:guid}")]
+    public async Task<IActionResult> RemoveControlAsync([FromRoute] Guid riskId, [FromRoute] Guid controlId)
+    {
+        var result = await _riskService.RemoveControlAsync(riskId, controlId);
+
+        return result.ToActionResult();
+    }
+
+    [HttpPatch("{riskId:guid}/controls/effectiveness")]
+    public async Task<IActionResult> ChangeControlEffectivenessAsync([FromRoute] Guid riskId, [FromBody] UpdateRiskControlEffectivenessRequest request)
+    {
+        var result = await _riskService.ChangeControlEffectivenessAsync(riskId, request);
+
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{riskId:guid}/controls")]
+    public async Task<IActionResult> GetListControlsAsync([FromRoute] Guid riskId)
+    {
+        var result = await _riskService.GetListControlsAsync(riskId);
 
         return result.ToActionResult();
     }

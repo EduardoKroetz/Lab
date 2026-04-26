@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Lab.Infrastructure.Data.Mappings;
+namespace Lab.Infrastructure.Data.EntityConfigurations;
 
-public class VulnerabilityMapping : IEntityTypeConfiguration<Vulnerability>
+public class ThreatMapping : IEntityTypeConfiguration<Threat>
 {
-    public void Configure(EntityTypeBuilder<Vulnerability> builder)
+    public void Configure(EntityTypeBuilder<Threat> builder)
     {
         builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Description).HasMaxLength(256);
-        builder.Property(x => x.Type).HasConversion(new EnumToStringConverter<EVulnerabilityType>());
+        builder.Property(x => x.Category).HasConversion(new EnumToStringConverter<EThreatCategory>());
 
         // Unique name per tenant
         builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();

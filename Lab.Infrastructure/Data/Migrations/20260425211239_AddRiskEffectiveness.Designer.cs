@@ -4,6 +4,7 @@ using Lab.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lab.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class LabDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260425211239_AddRiskEffectiveness")]
+    partial class AddRiskEffectiveness
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -302,7 +305,7 @@ namespace Lab.Infrastructure.Data.Migrations
                     b.Property<Guid>("ThreatId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("Treatment")
+                    b.Property<int>("Treatment")
                         .HasColumnType("int");
 
                     b.Property<string>("TreatmentDescription")
@@ -759,7 +762,7 @@ namespace Lab.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Lab.Domain.Entities.Vulnerability", "Vulnerability")
-                        .WithMany()
+                        .WithMany("Risks")
                         .HasForeignKey("VulnerabilityId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -881,6 +884,11 @@ namespace Lab.Infrastructure.Data.Migrations
                 });
 
             modelBuilder.Entity("Lab.Domain.Entities.Threat", b =>
+                {
+                    b.Navigation("Risks");
+                });
+
+            modelBuilder.Entity("Lab.Domain.Entities.Vulnerability", b =>
                 {
                     b.Navigation("Risks");
                 });

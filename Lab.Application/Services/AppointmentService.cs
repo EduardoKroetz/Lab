@@ -1,7 +1,7 @@
 using AutoMapper;
 using Lab.Application.Common.Interfaces;
+using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Appointments;
-using Lab.Domain.Common.Models;
 using Lab.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

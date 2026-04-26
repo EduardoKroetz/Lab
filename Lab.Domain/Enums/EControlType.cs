@@ -2,8 +2,7 @@
 
 public enum EControlType
 {
-    Technical = 1,
-    Physical = 2,
-    Process = 3,
-    Regulatory = 4
+    Preventive = 1,
+    Detective = 2,
+    Corrective = 3
 }

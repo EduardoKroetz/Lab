@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Lab.Infrastructure.Data.Mappings;
+namespace Lab.Infrastructure.Data.EntityConfigurations;
 
 public class RiskMapping : IEntityTypeConfiguration<Risk>
 {
@@ -22,7 +22,7 @@ public class RiskMapping : IEntityTypeConfiguration<Risk>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Vulnerability)
-            .WithMany(x => x.Risks)
+            .WithMany()
             .HasForeignKey(x => x.VulnerabilityId)
             .OnDelete(DeleteBehavior.Restrict);
 

@@ -9,7 +9,18 @@
 
 ## Risk Management
 
-Asset
-- Não permitir exclusão se houver Risks vinculados
-- Criticality deve influenciar cálculo de risco (ex: multiplicador ou peso)
+### Architecture Decision Record
+
+#### ADR — Propriedades pré-calculadas em Risk
+
+Decisão: Persistir EffectivenessOnProbability e EffectivenessOnImpact em vez de calcular dinamicamente a partir de RiskControls.
+Motivação: Evitar necessidade de carregar coleções e dependência de navegação (RiskControls + Control.Type) para calcular Score.
+
+Consequências:
+- ✔ Leitura mais simples e performática
+- ✔ Domínio independente de carregamento de dados
+- ❗ Necessário garantir recalculo ao adicionar/remover/alterar RiskControl
+- ❗ Possível inconsistência se regras não forem respeitadas
+
+Regra: Toda alteração em RiskControl deve acionar o recálculo da effectiveness no Risk.
 

@@ -54,6 +54,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasQueryFilter(e => e.TenantId == TenantId);
     }
 
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyTenantInformation();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override int SaveChanges()
+    {
+        ApplyTenantInformation();
+        return base.SaveChanges();
+    }
+
+    private void ApplyTenantInformation()
+    {
+        var entries = ChangeTracker.Entries().Where(e => e.Entity is ITenantEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        foreach (var entityEntry in entries)
+        {
+            ((ITenantEntity)entityEntry.Entity).TenantId = TenantId;
+        }
+    }
+
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         return await Database.BeginTransactionAsync(cancellationToken);

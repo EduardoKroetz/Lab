@@ -1,9 +1,8 @@
-using Lab.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Lab.Application.DTOs.Risks;
 
-public class UpsertRiskRequest
+public class InsertRiskRequest
 {
     [Required(ErrorMessage = "Informe o ID do ativo.")]
     public Guid AssetId { get; set; }
@@ -19,7 +18,4 @@ public class UpsertRiskRequest
 
     [Range(1, 5, ErrorMessage = "O impacto deve estar entre 1 e 5.")]
     public int Impact { get; set; }
-
-    [Required(ErrorMessage = "Informe o status.")]
-    public ERiskStatus Status { get; set; }
 }

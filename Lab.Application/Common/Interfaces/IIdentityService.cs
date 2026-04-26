@@ -1,4 +1,4 @@
-﻿using Lab.Domain.Common.Models;
+﻿using Lab.Application.Common.Models;
 
 namespace Lab.Application.Common.Interfaces;
 

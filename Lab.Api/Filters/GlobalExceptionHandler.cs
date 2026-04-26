@@ -1,3 +1,4 @@
+using Lab.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         var (statusCode, errorMessage) = exception switch
         {
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Acesso não autorizado"),
+            DomainException => (StatusCodes.Status400BadRequest, exception.Message),
             _ => (StatusCodes.Status500InternalServerError, "Ocorreu um erro inesperado.")
         };
 

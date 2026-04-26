@@ -1,7 +1,7 @@
 using AutoMapper;
 using Lab.Application.Common.Interfaces;
+using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Users;
-using Lab.Domain.Common.Models;
 
 namespace Lab.Application.Services;
 

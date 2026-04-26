@@ -1,6 +1,6 @@
 ﻿namespace Lab.Domain.Enums;
 
-public enum ERiskTreatmentStrategy
+public enum ERiskTreatment
 {
     Mitigate = 1,
     Accept = 2,

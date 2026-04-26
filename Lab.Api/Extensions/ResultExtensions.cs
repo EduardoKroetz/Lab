@@ -1,4 +1,4 @@
-﻿using Lab.Domain.Common.Models;
+﻿using Lab.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lab.Api.Extensions;

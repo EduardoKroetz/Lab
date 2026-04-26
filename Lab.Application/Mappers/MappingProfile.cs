@@ -1,7 +1,7 @@
 using AutoMapper;
 using Lab.Application.Common.Interfaces;
-using Lab.Application.DTOs.Assets;
 using Lab.Application.DTOs.Appointments;
+using Lab.Application.DTOs.Assets;
 using Lab.Application.DTOs.Controls;
 using Lab.Application.DTOs.Customers;
 using Lab.Application.DTOs.IncidentImpacts;
@@ -28,18 +28,31 @@ public class MappingProfile : Profile
 
         CreateMap<Control, GetControlResponse>();
         CreateMap<Customer, GetCustomerResponse>();
-        CreateMap<Incident, GetIncidentResponse>()
-            .ForMember(dest => dest.RelatedRiskScore, opt => opt.MapFrom(src => src.RelatedRisk == null ? (int?)null : src.RelatedRisk.Score));
+        CreateMap<Incident, GetIncidentResponse>();
         CreateMap<IncidentImpact, GetIncidentImpactResponse>()
             .ForMember(dest => dest.IncidentDescription, opt => opt.MapFrom(src => src.Incident.Description));
         CreateMap<Offering, GetOfferingResponse>();
-        CreateMap<Risk, GetRiskResponse>()
+
+        CreateMap<Risk, GetRiskListResponse>()
             .ForMember(dest => dest.AssetName, opt => opt.MapFrom(src => src.Asset.Name))
             .ForMember(dest => dest.ThreatName, opt => opt.MapFrom(src => src.Threat.Name))
-            .ForMember(dest => dest.VulnerabilityName, opt => opt.MapFrom(src => src.Vulnerability.Name));
+            .ForMember(dest => dest.VulnerabilityName, opt => opt.MapFrom(src => src.Vulnerability.Name))
+            .ForMember(dest => dest.Score, opt => opt.MapFrom(src => Math.Round(src.Score, 2)))
+            .ForMember(dest => dest.EffectivenessOnProbability, opt => opt.MapFrom(src => Math.Round(src.EffectivenessOnProbability, 2)))
+            .ForMember(dest => dest.EffectivenessOnImpact, opt => opt.MapFrom(src => Math.Round(src.EffectivenessOnImpact, 2)));
+
+        CreateMap<Risk, GetRiskDetailResponse>()
+             .ForMember(dest => dest.AssetName, opt => opt.MapFrom(src => src.Asset.Name))
+             .ForMember(dest => dest.ThreatName, opt => opt.MapFrom(src => src.Threat.Name))
+             .ForMember(dest => dest.VulnerabilityName, opt => opt.MapFrom(src => src.Vulnerability.Name))
+             .ForMember(dest => dest.Controls, opt => opt.MapFrom(src => src.RiskControls))
+             .ForMember(dest => dest.Score, opt => opt.MapFrom(src => Math.Round(src.Score, 2)))
+             .ForMember(dest => dest.EffectivenessOnProbability, opt => opt.MapFrom(src => Math.Round(src.EffectivenessOnProbability, 2)))
+             .ForMember(dest => dest.EffectivenessOnImpact, opt => opt.MapFrom(src => Math.Round(src.EffectivenessOnImpact, 2)));
+
         CreateMap<RiskControl, GetRiskControlResponse>()
-            .ForMember(dest => dest.RiskScore, opt => opt.MapFrom(src => src.Risk.Score))
             .ForMember(dest => dest.ControlName, opt => opt.MapFrom(src => src.Control.Name));
+
         CreateMap<Tenant, GetTenantResponse>();
         CreateMap<Threat, GetThreatResponse>();
         CreateMap<Vulnerability, GetVulnerabilityResponse>();

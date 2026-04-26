@@ -3,7 +3,7 @@ using Lab.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Lab.Infrastructure.Data.Mappings;
+namespace Lab.Infrastructure.Data.EntityConfigurations;
 
 public class AppointmentMapping : IEntityTypeConfiguration<Appointment>
 {
