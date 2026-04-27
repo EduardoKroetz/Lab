@@ -18,6 +18,13 @@ public class ThreatService
         _mapper = mapper;
     }
 
+    private async Task<bool> IsNameUniqueAsync(string name, Guid? id = null)
+    {
+        var isUnique = !(await _dbContext.Threats.AnyAsync(a => a.Id != id && a.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)));
+
+        return isUnique;
+    }
+
     public async Task<Result<List<GetThreatResponse>>> GetListAsync()
     {
         var threats = await _dbContext.Threats
@@ -43,6 +50,10 @@ public class ThreatService
 
     public async Task<Result<GetThreatResponse>> CreateAsync(UpsertThreatRequest request)
     {
+        var isNameUnique = await IsNameUniqueAsync(request.Name);
+        if (!isNameUnique)
+            return Result<GetThreatResponse>.Failure("O nome informado já está em uso");
+
         var threat = new Threat(request.Name, request.Description, request.Category);
 
         await _dbContext.Threats.AddAsync(threat);
@@ -56,6 +67,10 @@ public class ThreatService
         var threat = await _dbContext.Threats.FindAsync(id);
         if (threat == null)
             return Result<GetThreatResponse>.Failure("Ameaça não encontrada.");
+
+        var isNameUnique = await IsNameUniqueAsync(request.Name, id);
+        if (!isNameUnique)
+            return Result<GetThreatResponse>.Failure("O nome informado já está em uso");
 
         threat.Update(request.Name, request.Description, request.Category);
 

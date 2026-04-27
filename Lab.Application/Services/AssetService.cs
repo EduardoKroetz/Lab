@@ -18,6 +18,13 @@ public class AssetService
         _mapper = mapper;
     }
 
+    private async Task<bool> IsNameUniqueAsync(string name, Guid? id = null)
+    {
+        var isUnique = !(await _dbContext.Assets.AnyAsync(a => a.Id != id && a.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)));
+
+        return isUnique;
+    }
+
     public async Task<Result<List<GetAssetResponse>>> GetListAsync()
     {
         var assets = await _dbContext.Assets
@@ -43,6 +50,10 @@ public class AssetService
 
     public async Task<Result<GetAssetResponse>> CreateAsync(UpsertAssetRequest request)
     {
+        var isNameUnique = await IsNameUniqueAsync(request.Name);
+        if (!isNameUnique)
+            return Result<GetAssetResponse>.Failure("O nome informado já está em uso");
+
         var asset = new Asset(request.Name, request.Description, request.Type, request.Criticality);
 
         await _dbContext.Assets.AddAsync(asset);
@@ -56,6 +67,10 @@ public class AssetService
         var asset = await _dbContext.Assets.FindAsync(id);
         if (asset == null)
             return Result<GetAssetResponse>.Failure("Ativo não encontrado.");
+
+        var isNameUnique = await IsNameUniqueAsync(request.Name, id);
+        if (!isNameUnique)
+            return Result<GetAssetResponse>.Failure("O nome informado já está em uso");
 
         asset.Update(request.Name, request.Description, request.Type, request.Criticality);
 
