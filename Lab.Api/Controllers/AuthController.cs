@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Auth;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.LoginAsync(request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost("register")]
@@ -32,6 +31,6 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RegisterAsync(request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 }

@@ -1,8 +1,8 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Lab.Application.Common.Interfaces;
-using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Tenants;
 using Lab.Domain.Entities;
+using Lab.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lab.Application.Services;
@@ -22,7 +22,7 @@ public class TenantService
         _identityService = identityService;
     }
 
-    public async Task<Result<GetTenantResponse>> GetCurrentAsync()
+    public async Task<GetTenantResponse> GetCurrentAsync()
     {
         var tenantId = _tenantProvider.TenantId;
 
@@ -31,17 +31,14 @@ public class TenantService
             .FirstOrDefaultAsync(t => t.Id == tenantId);
 
         if (tenant == null)
-            return Result<GetTenantResponse>.Failure("Tenant não encontrado");
+            throw new NotFoundException("Tenant não encontrado");
 
-        var response = _mapper.Map<GetTenantResponse>(tenant);
-
-        return Result<GetTenantResponse>.Success(response);
+        return _mapper.Map<GetTenantResponse>(tenant);
     }
 
-    public async Task<Result<GetTenantResponse>> CreateAsync(InsertTenantRequest request)
+    public async Task<GetTenantResponse> CreateAsync(InsertTenantRequest request)
     {
         var tenant = new Tenant(request.Name);
-
         var transaction = await _dbContext.BeginTransactionAsync();
 
         try
@@ -49,20 +46,15 @@ public class TenantService
             await _dbContext.Tenants.AddAsync(tenant);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _identityService.CreateUserAsync(
+            await _identityService.CreateUserAsync(
                 email: request.User.Email,
                 password: request.User.Password,
                 tenantId: tenant.Id
             );
 
-            if (!result.Succeeded)
-                return Result<GetTenantResponse>.Failure(result.Errors);
-
             await transaction.CommitAsync();
 
-            var response = _mapper.Map<GetTenantResponse>(tenant);
-
-            return Result<GetTenantResponse>.Success(response);
+            return _mapper.Map<GetTenantResponse>(tenant);
         }
         catch
         {
@@ -71,20 +63,18 @@ public class TenantService
         }
     }
 
-    public async Task<Result<GetTenantResponse>> UpdateCurrentAsync(UpdateCurrentTenantRequest request)
+    public async Task<GetTenantResponse> UpdateCurrentAsync(UpdateCurrentTenantRequest request)
     {
         var tenantId = _tenantProvider.TenantId;
 
         var tenant = await _dbContext.Tenants.FindAsync(tenantId);
         if (tenant == null)
-            return Result<GetTenantResponse>.Failure("Tenant não encontrado");
+            throw new NotFoundException("Tenant não encontrado");
 
         tenant.Update(request.Name);
 
         await _dbContext.SaveChangesAsync();
 
-        var response = _mapper.Map<GetTenantResponse>(tenant);
-
-        return Result<GetTenantResponse>.Success(response);
+        return _mapper.Map<GetTenantResponse>(tenant);
     }
 }

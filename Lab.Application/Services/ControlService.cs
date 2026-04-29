@@ -1,8 +1,8 @@
 using AutoMapper;
 using Lab.Application.Common.Interfaces;
-using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Controls;
 using Lab.Domain.Entities;
+using Lab.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lab.Application.Services;
@@ -18,30 +18,28 @@ public class ControlService
         _mapper = mapper;
     }
 
-    public async Task<Result<List<GetControlResponse>>> GetListAsync()
+    public async Task<List<GetControlResponse>> GetListAsync()
     {
         var controls = await _dbContext.Controls
             .AsNoTracking()
             .ToListAsync();
 
-        var responses = controls.Select(control => _mapper.Map<GetControlResponse>(control)).ToList();
-
-        return Result<List<GetControlResponse>>.Success(responses);
+        return controls.Select(control => _mapper.Map<GetControlResponse>(control)).ToList();
     }
 
-    public async Task<Result<GetControlResponse>> GetByIdAsync(Guid id)
+    public async Task<GetControlResponse> GetByIdAsync(Guid id)
     {
         var control = await _dbContext.Controls
             .AsNoTracking()
             .FirstOrDefaultAsync(control => control.Id == id);
 
         if (control == null)
-            return Result<GetControlResponse>.Failure("Controle não encontrado.");
+            throw new NotFoundException("Controle não encontrado.");
 
-        return Result<GetControlResponse>.Success(_mapper.Map<GetControlResponse>(control));
+        return _mapper.Map<GetControlResponse>(control);
     }
 
-    public async Task<Result<GetControlResponse>> CreateAsync(UpsertControlRequest request)
+    public async Task<GetControlResponse> CreateAsync(UpsertControlRequest request)
     {
         var control = new Control(request.Name, request.Description, request.Type, request.Category);
 
@@ -51,11 +49,11 @@ public class ControlService
         return await GetByIdAsync(control.Id);
     }
 
-    public async Task<Result<GetControlResponse>> UpdateAsync(Guid id, UpsertControlRequest request)
+    public async Task<GetControlResponse> UpdateAsync(Guid id, UpsertControlRequest request)
     {
         var control = await _dbContext.Controls.FindAsync(id);
         if (control == null)
-            return Result<GetControlResponse>.Failure("Controle não encontrado.");
+            throw new NotFoundException("Controle não encontrado.");
 
         control.Update(request.Name, request.Description, request.Type, request.Category);
 
@@ -64,15 +62,13 @@ public class ControlService
         return await GetByIdAsync(id);
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
         var control = await _dbContext.Controls.FindAsync(id);
         if (control == null)
-            return Result.Failure("Controle não encontrado.");
+            throw new NotFoundException("Controle não encontrado.");
 
         _dbContext.Controls.Remove(control);
         await _dbContext.SaveChangesAsync();
-
-        return Result.Success();
     }
 }

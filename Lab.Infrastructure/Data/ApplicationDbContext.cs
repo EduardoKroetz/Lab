@@ -83,10 +83,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<Tenant> Tenants { get; set; }
 
-    public DbSet<Customer> Customers { get; set; }
-    public DbSet<Appointment> Appointments { get; set; }
-    public DbSet<Offering> Offerings { get; set; }
-
     public DbSet<Asset> Assets { get; set; }
     public DbSet<Threat> Threats { get; set; }
     public DbSet<Vulnerability> Vulnerabilities { get; set; }

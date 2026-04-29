@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Vulnerabilities;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class VulnerabilitiesController : ControllerBase
     {
         var result = await _vulnerabilityService.GetListAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetVulnerabilityByIdAsync))]
@@ -31,17 +30,15 @@ public class VulnerabilitiesController : ControllerBase
     {
         var result = await _vulnerabilityService.GetByIdAsync(id);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertVulnerabilityRequest request)
     {
         var result = await _vulnerabilityService.CreateAsync(request);
-        if (!result.Succeeded)
-            return result.ToActionResult();
 
-        return CreatedAtRoute(nameof(GetVulnerabilityByIdAsync), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtRoute(nameof(GetVulnerabilityByIdAsync), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
@@ -49,14 +46,14 @@ public class VulnerabilitiesController : ControllerBase
     {
         var result = await _vulnerabilityService.UpdateAsync(id, request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var result = await _vulnerabilityService.DeleteAsync(id);
+        await _vulnerabilityService.DeleteAsync(id);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 }

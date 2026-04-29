@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +21,6 @@ public class UsersController : ControllerBase
     {
         var result = await _userService.GetCurrentUserAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 }

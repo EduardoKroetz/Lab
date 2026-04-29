@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Threats;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class ThreatsController : ControllerBase
     {
         var result = await _threatService.GetListAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetThreatByIdAsync))]
@@ -31,17 +30,15 @@ public class ThreatsController : ControllerBase
     {
         var result = await _threatService.GetByIdAsync(id);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertThreatRequest request)
     {
         var result = await _threatService.CreateAsync(request);
-        if (!result.Succeeded)
-            return result.ToActionResult();
 
-        return CreatedAtRoute(nameof(GetThreatByIdAsync), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtRoute(nameof(GetThreatByIdAsync), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
@@ -49,14 +46,14 @@ public class ThreatsController : ControllerBase
     {
         var result = await _threatService.UpdateAsync(id, request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var result = await _threatService.DeleteAsync(id);
+        await _threatService.DeleteAsync(id);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 }

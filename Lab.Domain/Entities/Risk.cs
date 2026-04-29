@@ -30,9 +30,10 @@ public class Risk : TenantEntity
     public ERiskTreatment? Treatment { get; private set; }
     public string? TreatmentDescription { get; private set; }
 
-    public double Score => CalculateScore(Probability, Impact, EffectivenessOnProbability, EffectivenessOnImpact);
+    public int RawScore => Probability * Impact;
+    public double ResidualScore => CalculateResidualScore(Probability, Impact, EffectivenessOnProbability, EffectivenessOnImpact);
 
-    public ERiskLevel Level => Score switch
+    public ERiskLevel Level => ResidualScore switch
     {
         >= 20 => ERiskLevel.Critical,
         >= 15 => ERiskLevel.High,
@@ -82,7 +83,7 @@ public class Risk : TenantEntity
         EffectivenessOnImpact = CalculateEffectiveness(impactRiskControls);
     }
 
-    private static double CalculateScore(int probability, int impact, double effProbability, double effImpact)
+    private static double CalculateResidualScore(int probability, int impact, double effProbability, double effImpact)
     {
         var p = probability * (1 - effProbability / 100.0);
         var i = impact * (1 - effImpact / 100.0);

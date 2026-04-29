@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Assets;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class AssetsController : ControllerBase
     {
         var result = await _assetService.GetListAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetAssetByIdAsync))]
@@ -31,17 +30,15 @@ public class AssetsController : ControllerBase
     {
         var result = await _assetService.GetByIdAsync(id);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertAssetRequest request)
     {
         var result = await _assetService.CreateAsync(request);
-        if (!result.Succeeded)
-            return result.ToActionResult();
 
-        return CreatedAtRoute(nameof(GetAssetByIdAsync), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtRoute(nameof(GetAssetByIdAsync), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
@@ -49,14 +46,14 @@ public class AssetsController : ControllerBase
     {
         var result = await _assetService.UpdateAsync(id, request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var result = await _assetService.DeleteAsync(id);
+        await _assetService.DeleteAsync(id);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 }

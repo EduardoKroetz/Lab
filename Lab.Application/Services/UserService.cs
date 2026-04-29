@@ -1,6 +1,5 @@
 using AutoMapper;
 using Lab.Application.Common.Interfaces;
-using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Users;
 
 namespace Lab.Application.Services;
@@ -18,16 +17,11 @@ public class UserService
         _mapper = mapper;
     }
 
-    public async Task<Result<GetCurrentUserResponse>> GetCurrentUserAsync()
+    public async Task<GetCurrentUserResponse> GetCurrentUserAsync()
     {
         var userId = _userProvider.UserId;
+        var user = await _identityService.GetUserByIdAsync(userId);
 
-        var userResult = await _identityService.GetUserByIdAsync(userId);
-        if (!userResult.Succeeded)
-            return Result<GetCurrentUserResponse>.Failure(userResult.Errors);
-
-        var response = _mapper.Map<GetCurrentUserResponse>(userResult.Value);
-
-        return Result<GetCurrentUserResponse>.Success(response);
+        return _mapper.Map<GetCurrentUserResponse>(user);
     }
 }

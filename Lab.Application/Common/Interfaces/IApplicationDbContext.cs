@@ -7,9 +7,6 @@ namespace Lab.Application.Common.Interfaces;
 public interface IApplicationDbContext
 {
     DbSet<Tenant> Tenants { get; set; }
-    DbSet<Customer> Customers { get; set; }
-    DbSet<Appointment> Appointments { get; set; }
-    DbSet<Offering> Offerings { get; set; }
 
     DbSet<Asset> Assets { get; set; }
     DbSet<Threat> Threats { get; set; }

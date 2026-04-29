@@ -1,6 +1,6 @@
 using Lab.Application.Common.Interfaces;
-using Lab.Application.Common.Models;
 using Lab.Application.DTOs.Auth;
+using Lab.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lab.Application.Services;
@@ -18,36 +18,27 @@ public class AuthService
         _dbContext = dbContext;
     }
 
-    public async Task<Result<LoginUserResponse>> LoginAsync(LoginUserRequest request)
+    public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request)
     {
-        var authResult = await _identityService.AuthenticateAsync(request.Email, request.Password);
-        if (!authResult.Succeeded)
-            return Result<LoginUserResponse>.Failure(authResult.Errors);
+        var user = await _identityService.AuthenticateAsync(request.Email, request.Password);
+        var token = _tokenService.GenerateAccessToken(user);
 
-        var token = _tokenService.GenerateAccessToken(user: authResult.Value);
-
-        var response = new LoginUserResponse
+        return new LoginUserResponse
         {
             Token = token
         };
-
-        return Result<LoginUserResponse>.Success(response);
     }
 
-    public async Task<Result<RegisterUserResponse>> RegisterAsync(RegisterUserRequest request)
+    public async Task<RegisterUserResponse> RegisterAsync(RegisterUserRequest request)
     {
         if (!await _dbContext.Tenants.AnyAsync(t => t.Id == request.TenantId))
-            return Result<RegisterUserResponse>.Failure("Tenant não encontrado.");
+            throw new NotFoundException("Tenant não encontrado.");
 
-        var result = await _identityService.CreateUserAsync(request.Email, request.Password, request.TenantId);
-        if (!result.Succeeded)
-            return Result<RegisterUserResponse>.Failure(result.Errors);
+        var user = await _identityService.CreateUserAsync(request.Email, request.Password, request.TenantId);
 
-        var response = new RegisterUserResponse
+        return new RegisterUserResponse
         {
-            UserId = result.Value.Id
+            UserId = user.Id
         };
-
-        return Result<RegisterUserResponse>.Success(response);
     }
 }

@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Controls;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class ControlsController : ControllerBase
     {
         var result = await _controlService.GetListAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetControlByIdAsync))]
@@ -31,17 +30,15 @@ public class ControlsController : ControllerBase
     {
         var result = await _controlService.GetByIdAsync(id);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertControlRequest request)
     {
         var result = await _controlService.CreateAsync(request);
-        if (!result.Succeeded)
-            return result.ToActionResult();
 
-        return CreatedAtRoute(nameof(GetControlByIdAsync), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtRoute(nameof(GetControlByIdAsync), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
@@ -49,14 +46,14 @@ public class ControlsController : ControllerBase
     {
         var result = await _controlService.UpdateAsync(id, request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var result = await _controlService.DeleteAsync(id);
+        await _controlService.DeleteAsync(id);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 }

@@ -28,7 +28,8 @@ public static class DependencyInjection
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<PtBrIdentityErrorDescriber>();
 
         builder.Services.Configure<IdentityOptions>(opt =>
         {

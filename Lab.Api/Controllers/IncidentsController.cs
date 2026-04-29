@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.IncidentImpacts;
 using Lab.Application.DTOs.Incidents;
 using Lab.Application.Services;
@@ -24,7 +23,7 @@ public class IncidentsController : ControllerBase
     {
         var result = await _incidentService.GetListAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = nameof(GetIncidentByIdAsync))]
@@ -32,17 +31,15 @@ public class IncidentsController : ControllerBase
     {
         var result = await _incidentService.GetByIdAsync(id);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] UpsertIncidentRequest request)
     {
         var result = await _incidentService.CreateAsync(request);
-        if (!result.Succeeded)
-            return result.ToActionResult();
 
-        return CreatedAtRoute(nameof(GetIncidentByIdAsync), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtRoute(nameof(GetIncidentByIdAsync), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:guid}")]
@@ -50,31 +47,31 @@ public class IncidentsController : ControllerBase
     {
         var result = await _incidentService.UpdateAsync(id, request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
-        var result = await _incidentService.DeleteAsync(id);
+        await _incidentService.DeleteAsync(id);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 
     [HttpPost("{incidentId:guid}/impacts")]
     public async Task<IActionResult> AddImpactAsync([FromRoute] Guid incidentId, [FromBody] UpsertIncidentImpactRequest request)
     {
-        var result = await _incidentService.AddImpactAsync(incidentId, request);
+        await _incidentService.AddImpactAsync(incidentId, request);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 
     [HttpDelete("{incidentId:guid}/impacts/{impactId:guid}")]
     public async Task<IActionResult> RemoveImpactAsync([FromRoute] Guid incidentId, [FromRoute] Guid impactId)
     {
-        var result = await _incidentService.RemoveImpactAsync(incidentId, impactId);
+        await _incidentService.RemoveImpactAsync(incidentId, impactId);
 
-        return result.ToActionResult();
+        return NoContent();
     }
 
     [HttpGet("{incidentId:guid}/impacts")]
@@ -82,6 +79,6 @@ public class IncidentsController : ControllerBase
     {
         var result = await _incidentService.GetListImpactsAsync(incidentId);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 }

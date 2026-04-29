@@ -1,4 +1,3 @@
-using Lab.Api.Extensions;
 using Lab.Application.DTOs.Tenants;
 using Lab.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +22,7 @@ public class TenantsController : ControllerBase
     {
         var result = await _tenantService.GetCurrentAsync();
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPost]
@@ -31,7 +30,7 @@ public class TenantsController : ControllerBase
     {
         var result = await _tenantService.CreateAsync(request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 
     [HttpPut("current")]
@@ -39,6 +38,6 @@ public class TenantsController : ControllerBase
     {
         var result = await _tenantService.UpdateCurrentAsync(request);
 
-        return result.ToActionResult();
+        return Ok(result);
     }
 }

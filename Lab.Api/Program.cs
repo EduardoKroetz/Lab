@@ -39,17 +39,14 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.AddInfrastructureServices();
 
 builder.Services.AddScoped<AssetService>();
-builder.Services.AddScoped<OfferingService>();
 builder.Services.AddScoped<ThreatService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<VulnerabilityService>();
-builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<RiskService>();
 builder.Services.AddScoped<ControlService>();
 builder.Services.AddScoped<IncidentService>();
 builder.Services.AddScoped<TenantService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AppointmentService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
