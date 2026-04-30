@@ -20,7 +20,6 @@
 
 ### Riscos
 - Possibilidade de uma ameaça explorar uma vulnerabilidade e causar dano no ativo
-- Somente na criação de um risco, caso o impacto não seja informado, ele deve ser inferido automaticamente pela criticalidade do Ativo vinculado.
 - Qualquer alteração no risco gera um histórico e uma Snapshot
 - O Score do risco é influenciado por
 	- Probabilidade X Impacto
@@ -41,8 +40,7 @@
 - Status e Transições
 	- Identified: status padrão ao criar um risco
 	- Identified -> UnderTreatment
-		- Existe pelo menos uma Task aberta vinculado ao risco 
-		- OU o Tratamento = Mitigado
+		- Existe pelo menos uma Task ou Incidente aberto vinculado ao risco 
 	- UnderTreatment -> Monitoring
 		- Todas as Tasks vinculadas ao risco foram concluídas
 	- Monitoring -> Closed

@@ -7,17 +7,17 @@ namespace Lab.Domain.Entities;
 public class Incident : TenantEntity
 {
     internal Incident() { } // EF
-    public Incident(string description, DateTime dateOccurred, EIncidentStatus status, Guid? relatedRiskId)
+    public Incident(string description, DateTime dateOccurred, EIncidentStatus status, Guid riskId)
     {
         Description = description;
         DateOccurred = dateOccurred;
         Status = status;
-        RelatedRiskId = relatedRiskId;
+        RiskId = riskId;
     }
 
     public string Description { get; private set; } = null!;
     public DateTime DateOccurred { get; private set; }
-    public Guid? RelatedRiskId { get; private set; }
+    public Guid RiskId { get; private set; }
     public EIncidentStatus Status { get; private set; }
 
     public Risk? RelatedRisk { get; private set; } = null!;
@@ -25,12 +25,12 @@ public class Incident : TenantEntity
     private readonly List<IncidentImpact> _incidentImpacts = [];
     public IReadOnlyCollection<IncidentImpact> IncidentImpacts => _incidentImpacts.AsReadOnly();
 
-    public void Update(string description, DateTime dateOccurred, EIncidentStatus status, Guid? relatedRiskId)
+    public void Update(string description, DateTime dateOccurred, EIncidentStatus status, Guid riskId)
     {
         Description = description;
         DateOccurred = dateOccurred;
         Status = status;
-        RelatedRiskId = relatedRiskId;
+        RiskId = riskId;
     }
 
     public void AddImpact(EIncidentImpactType type, EIncidentImpactLevel level)
