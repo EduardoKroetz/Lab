@@ -12,7 +12,7 @@ public class UpsertIncidentRequest
     [Required(ErrorMessage = "Informe a data da ocorrência.")]
     public DateTime DateOccurred { get; set; }
 
-    public Guid? RelatedRiskId { get; set; }
+    public Guid RiskId { get; set; }
 
     [Required(ErrorMessage = "Informe o status.")]
     public EIncidentStatus Status { get; set; }

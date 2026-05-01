@@ -46,10 +46,10 @@ public class IncidentService
 
     public async Task<GetIncidentDetailResponse> CreateAsync(UpsertIncidentRequest request)
     {
-        if (request.RelatedRiskId.HasValue && !await _dbContext.Risks.AnyAsync(x => x.Id == request.RelatedRiskId.Value))
+        if (!await _dbContext.Risks.AnyAsync(x => x.Id == request.RiskId))
             throw new NotFoundException("Risco relacionado não encontrado.");
 
-        var incident = new Incident(request.Description, request.DateOccurred, request.Status, request.RelatedRiskId);
+        var incident = new Incident(request.Description, request.DateOccurred, request.Status, request.RiskId);
 
         await _dbContext.Incidents.AddAsync(incident);
         await _dbContext.SaveChangesAsync();
@@ -59,14 +59,14 @@ public class IncidentService
 
     public async Task<GetIncidentDetailResponse> UpdateAsync(Guid id, UpsertIncidentRequest request)
     {
-        if (request.RelatedRiskId.HasValue && !await _dbContext.Risks.AnyAsync(x => x.Id == request.RelatedRiskId.Value))
+        if (!await _dbContext.Risks.AnyAsync(x => x.Id == request.RiskId))
             throw new NotFoundException("Risco relacionado não encontrado.");
 
         var incident = await _dbContext.Incidents.FindAsync(id);
         if (incident == null)
             throw new NotFoundException("Incidente não encontrado.");
 
-        incident.Update(request.Description, request.DateOccurred, request.Status, request.RelatedRiskId);
+        incident.Update(request.Description, request.DateOccurred, request.Status, request.RiskId);
 
         await _dbContext.SaveChangesAsync();
 

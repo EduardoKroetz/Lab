@@ -50,8 +50,8 @@ public class Risk : TenantEntity
     public Threat Threat { get; private set; } = null!;
     public Vulnerability Vulnerability { get; private set; } = null!;
 
-    private readonly List<Task> _tasks = [];
-    public IReadOnlyCollection<Task> Tasks => _tasks.AsReadOnly();
+    private readonly List<WorkItem> _tasks = [];
+    public IReadOnlyCollection<WorkItem> Tasks => _tasks.AsReadOnly();
 
     private readonly List<Incident> _incidents = [];
     public IReadOnlyCollection<Incident> Incidents => _incidents.AsReadOnly();
@@ -140,7 +140,7 @@ public class Risk : TenantEntity
         StartTreatment();
     }
 
-    public void AddTask(Task newTask)
+    public void AddTask(WorkItem newTask)
     {
         if (newTask.RelatedRiskId != Id)
             throw new DomainException("Não é possível adicionar uma tarefa não relacionada ao risco.");

@@ -30,7 +30,7 @@ public class RiskService
             r.VulnerabilityId == vulnerabilityId);
     }
 
-    public async Task ChangeTreatmentAsync(Guid riskId, ERiskTreatment? treatment, string? description)
+    private async Task ChangeTreatmentAsync(Guid riskId, ERiskTreatment treatment, string? description)
     {
         var risk = await _dbContext.Risks.Include(r => r.RiskControls).FirstOrDefaultAsync(r => r.Id == riskId) ?? throw new NotFoundException("Risco não encontrado");
 
@@ -42,7 +42,27 @@ public class RiskService
                 throw new ValidationException("Para Eliminar, o ativo vinculado deve estar desabilitado.");
         }
 
-        risk.ChangeTreatment(treatment, description);
+        switch (treatment)
+        {
+            case ERiskTreatment.Mitigate:
+            risk.Mitigate();
+            break;
+
+            case ERiskTreatment.Accept:
+            risk.Accept(reason: description);
+            break;
+
+            case ERiskTreatment.Transfer:
+            risk.Transfer(description: description);
+            break;
+
+            case ERiskTreatment.Eliminate:
+            risk.Eliminate(reason: description);
+            break;
+
+            default:
+            throw new InvalidOperationException("Tratamento inválido");
+        }
 
         await _dbContext.SaveChangesAsync();
     }
@@ -92,7 +112,6 @@ public class RiskService
     {
         var risk = await _dbContext.Risks.FindAsync(id) ?? throw new NotFoundException("Risco não encontrado.");
 
-        risk.ChangeStatus(request.Status);
         risk.ChangeProbability(request.Probability);
         risk.ChangeImpact(request.Impact);
 
@@ -115,7 +134,7 @@ public class RiskService
         var risk = await _dbContext.Risks.Include(r => r.RiskControls).FirstOrDefaultAsync(r => r.Id == riskId) ?? throw new NotFoundException("Risco não encontrado.");
         var control = await _dbContext.Controls.FindAsync(request.ControlId) ?? throw new NotFoundException("Controle não encontrado.");
 
-        risk.AddControl(control.Id, control.Type, request.Effectiveness);
+        risk.AddControl(control.Id, control.Type);
 
         await _dbContext.SaveChangesAsync();
     }

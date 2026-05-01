@@ -1,6 +1,6 @@
 ﻿namespace Lab.Domain.Enums;
 
-public enum ETaskStatus
+public enum EWorkItemStatus
 {
     Pending = 1,
     InProgress = 2,

@@ -1,6 +1,6 @@
 ﻿namespace Lab.Domain.Enums;
 
-public enum ETaskType
+public enum EWorkItemType
 {
     RiskTreatment = 1,
     ControlExecution = 2,
