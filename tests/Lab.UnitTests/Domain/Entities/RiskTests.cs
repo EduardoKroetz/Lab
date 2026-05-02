@@ -1,6 +1,8 @@
-﻿using Lab.Domain.Entities;
+﻿using Lab.Domain.Common;
+using Lab.Domain.Entities;
 using Lab.Domain.Enums;
 using Lab.Domain.Exceptions;
+using System.Collections;
 
 namespace Lab.UnitTests.Domain.Entities;
 
@@ -96,6 +98,114 @@ public class RiskTests
 
         Assert.Equal(expectedLevel, risk.Level);
     }
+
+    // -------------------------------------------------------
+    // Review
+    // -------------------------------------------------------
+
+    [Fact]
+    public void SetReviewSchedule_BothReviewDateAndIntervalNull_MustThrowDomainException()
+    {
+        Assert.Throws<DomainException>(() => NewRiskWithSchedule(reviewFixedDate: null, reviewInterval: null));
+    }
+
+    [Fact]
+    public void SetReviewSchedule_BothReviewDateAndIntervalProvided_MustThrowDomainException()
+    {
+        Assert.Throws<DomainException>(() => NewRiskWithSchedule(reviewFixedDate: DateTime.UtcNow, reviewInterval: TimeSpan.FromDays(30)));
+    }
+
+    [Fact]
+    public void SetReviewSchedule_ValidFixedDate_MustSetReviewFixedDate()
+    {
+        var fixedDate = DateTime.UtcNow.AddMonths(3);
+        var risk = NewRiskWithSchedule(reviewFixedDate: fixedDate);
+
+        Assert.Equal(fixedDate, risk.ReviewFixedDate);
+    }
+
+    [Fact]
+    public void SetReviewSchedule_ValidFixedDate_MustNotSetReviewInterval()
+    {
+        var risk = NewRiskWithSchedule(reviewFixedDate: DateTime.UtcNow.AddMonths(3));
+
+        Assert.Null(risk.ReviewInterval);
+    }
+
+    [Fact]
+    public void NextReviewDate_WithFixedDate_MustReturnFixedDate()
+    {
+        var fixedDate = DateTime.UtcNow.AddMonths(3);
+        var risk = NewRiskWithSchedule(reviewFixedDate: fixedDate);
+
+        Assert.Equal(fixedDate, risk.NextReviewDate);
+    }
+
+    [Fact]
+    public void NextReviewDate_WithInterval_MustReturnInterval()
+    {
+        var interval = TimeSpan.FromDays(60);
+        var now = DateTime.UtcNow;
+        var risk = NewRiskWithSchedule(reviewInterval: interval, now: now);
+
+        Assert.Equal(now.Add(interval), risk.NextReviewDate);
+    }
+
+    // Review Fixed Date
+    public class ReviewInvalidFixedDateData : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            var now = DateTime.UtcNow;
+
+            yield return [now.AddDays(-1)];
+            yield return [now];
+            yield return [now.AddYears(10).AddDays(1)];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(ReviewInvalidFixedDateData))]
+    public void SetReviewSchedule_InvalidFixedDate_MustThrowDomainException(DateTime invalidFixedDate)
+    {
+        Assert.Throws<DomainException>(() => NewRiskWithSchedule(reviewFixedDate: invalidFixedDate, reviewInterval: null));
+    }
+
+    // Review Interval
+    public class ReviewInvalidIntervalData : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator()
+        {
+            yield return [TimeSpan.Zero];
+            yield return [TimeSpan.FromDays(365 * 10 + 1)];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(ReviewInvalidIntervalData))]
+    public void SetReviewSchedule_InvalidInterval_MustThrowDomainException(TimeSpan invalidInterval)
+    {
+        Assert.Throws<DomainException>(() => NewRiskWithSchedule(reviewFixedDate: null, reviewInterval: invalidInterval));
+    }
+
+    // -------------------------------------------------------
+    // LastEvaluated
+    // -------------------------------------------------------
+    [Fact]
+    public void MarkAsEvaluated_MustReturnLastEvaluatedAt()
+    {
+        var now = DateTime.UtcNow;
+        var risk = NewRiskWithSchedule(reviewFixedDate: DateTime.UtcNow.AddMonths(3), now: now);
+
+        risk.MarkAsEvaluated();
+
+        Assert.Equal(now, risk.LastEvaluatedAt);
+    }
+
 
     // -------------------------------------------------------
     // AddControl
@@ -305,6 +415,7 @@ public class RiskTests
         risk.Close("Encerrado após monitoramento.");
 
         Assert.Equal(ERiskStatus.Closed, risk.Status);
+        Assert.Equal("Encerrado após monitoramento.", risk.ReasonForClose);
     }
 
     [Fact]
@@ -351,6 +462,25 @@ public class RiskTests
 
     private static Risk NewRisk(int probability = 3, int impact = 5)
     {
-        return new Risk(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), probability, impact);
+        var clock = new FakeClock(DateTime.UtcNow);
+
+        return new Risk(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), probability, impact, reviewFixedDate: DateTime.UtcNow.AddMonths(3), reviewInterval: null, clock);
+    }
+
+    private static Risk NewRiskWithSchedule(DateTime? reviewFixedDate = null, TimeSpan? reviewInterval = null, DateTime? now = null)
+    {
+        var clock = new FakeClock(now ?? DateTime.UtcNow);
+
+        return new Risk(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), probability: 3, impact: 5, reviewFixedDate: reviewFixedDate, reviewInterval: reviewInterval, clock);
+    }
+
+    private class FakeClock : ISystemClock
+    {
+        public DateTime UtcNow { get; }
+
+        public FakeClock(DateTime utcNow)
+        {
+            UtcNow = utcNow;
+        }
     }
 }
