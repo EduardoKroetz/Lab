@@ -16,7 +16,7 @@ public class IncidentMapping : IEntityTypeConfiguration<Incident>
 
         builder.HasOne(x => x.RelatedRisk)
             .WithMany()
-            .HasForeignKey(x => x.RelatedRiskId)
+            .HasForeignKey(x => x.RiskId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(x => x.IncidentImpacts)

@@ -1,7 +1,9 @@
 ﻿using Lab.Application.Common.Interfaces;
+using Lab.Domain.Common;
 using Lab.Infrastructure.Data;
 using Lab.Infrastructure.Identity;
 using Lab.Infrastructure.Services;
+using Lab.Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +57,8 @@ public static class DependencyInjection
                 ValidateIssuerSigningKey = true,
             };
         });
+
+        builder.Services.AddSingleton<ISystemClock, SystemClock>();
 
         builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 

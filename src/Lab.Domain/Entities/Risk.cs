@@ -6,16 +6,20 @@ namespace Lab.Domain.Entities;
 
 public class Risk : TenantEntity
 {
+    private readonly ISystemClock _clock;
+
     protected Risk() { } // EF
-    public Risk(Guid assetId, Guid threatId, Guid vulnerabilityId, int probability, int impact)
+    public Risk(Guid assetId, Guid threatId, Guid vulnerabilityId, int probability, int impact, DateTime? reviewFixedDate, TimeSpan? reviewInterval, ISystemClock clock)
     {
         Status = ERiskStatus.Identified;
         AssetId = assetId;
         ThreatId = threatId;
         VulnerabilityId = vulnerabilityId;
+        _clock = clock;
 
-        ChangeProbability(probability);
-        ChangeImpact(impact);
+        SetProbability(probability);
+        SetImpact(impact);
+        SetReviewSchedule(reviewFixedDate, reviewInterval);
     }
 
     public Guid AssetId { get; private set; }
@@ -26,11 +30,13 @@ public class Risk : TenantEntity
     public int Impact { get; private set; }
 
     public ERiskStatus Status { get; private set; }
+    public string? ReasonForClose { get; private set; }
 
     public ERiskTreatment? Treatment { get; private set; }
     public string? TreatmentDescription { get; private set; }
 
-    public string? ReasonForClose { get; private set; }
+    public double EffectivenessOnProbability { get; private set; }
+    public double EffectivenessOnImpact { get; private set; }
 
     public int RawScore => Probability * Impact;
     public double ResidualScore => CalculateResidualScore(Probability, Impact, EffectivenessOnProbability, EffectivenessOnImpact);
@@ -43,8 +49,22 @@ public class Risk : TenantEntity
         _ => ERiskLevel.Low
     };
 
-    public double EffectivenessOnProbability { get; private set; }
-    public double EffectivenessOnImpact { get; private set; }
+    public DateTime? ReviewFixedDate { get; private set; }
+    public TimeSpan? ReviewInterval { get; private set; }
+    public DateTime? LastEvaluatedAt { get; private set; }
+    public DateTime? NextReviewDate
+    {
+        get
+        {
+            if (ReviewFixedDate.HasValue)
+                return ReviewFixedDate;
+
+            if (!ReviewInterval.HasValue)
+                return null;
+
+            return (LastEvaluatedAt ?? _clock.UtcNow).Add(ReviewInterval.Value);
+        }
+    }
 
     public Asset Asset { get; private set; } = null!;
     public Threat Threat { get; private set; } = null!;
@@ -58,6 +78,87 @@ public class Risk : TenantEntity
 
     private readonly List<RiskControl> _riskControls = [];
     public IReadOnlyCollection<RiskControl> RiskControls => _riskControls.AsReadOnly();
+
+    public void RecalculateEffectiveness()
+    {
+        var probabilityRiskControls = _riskControls.Where(r => r.ControlType is EControlType.Preventive).ToList();
+        var impactRiskControls = _riskControls.Where(r => r.ControlType is EControlType.Detective or EControlType.Corrective).ToList();
+
+        EffectivenessOnProbability = CalculateEffectiveness(probabilityRiskControls);
+        EffectivenessOnImpact = CalculateEffectiveness(impactRiskControls);
+    }
+
+    private static double CalculateResidualScore(int probability, int impact, double effProbability, double effImpact)
+    {
+        var p = probability * (1 - effProbability / 100.0);
+        var i = impact * (1 - effImpact / 100.0);
+        return p * i;
+    }
+
+    private static double CalculateEffectiveness(List<RiskControl> controls)
+    {
+        if (!controls.Any())
+            return 0;
+
+        var combined = 1 - controls.Aggregate(1.0, (product, rc) => product * (1 - (rc.Effectiveness ?? 0) / 100.0));
+        return combined * 100;
+    }
+
+    public void SetProbability(int probability)
+    {
+        if (probability <= 0 || probability > 5)
+            throw new DomainException("A probabilidade deve estar entre 0 e 5");
+
+        Probability = probability;
+    }
+
+    public void SetImpact(int impact)
+    {
+        if (impact <= 0 || impact > 5)
+            throw new DomainException("O impacto deve estar entre 0 e 5");
+
+        Impact = impact;
+    }
+
+    public void SetReviewSchedule(DateTime? reviewFixedDate, TimeSpan? reviewInterval)
+    {
+        const int MaxReviewYears = 10;
+
+        var now = _clock.UtcNow;
+        var maxDate = now.AddYears(MaxReviewYears);
+
+        if (reviewFixedDate is null && reviewInterval is null)
+            throw new DomainException("Revisões de risco são obrigatórias: informe uma data fixa ou um intervalo.");
+
+        if (reviewFixedDate is not null && reviewInterval is not null)
+            throw new DomainException("Só é possível especificar um tipo de revisão: data fixa ou intervalo.");
+
+        if (reviewFixedDate is not null)
+        {
+            if (reviewFixedDate <= now)
+                throw new DomainException("A data de revisão deve estar no futuro.");
+
+            if (reviewFixedDate > maxDate)
+                throw new DomainException($"A data de revisão não pode ser maior que {MaxReviewYears} anos.");
+        }
+
+        if (reviewInterval is not null)
+        {
+            if (reviewInterval <= TimeSpan.Zero)
+                throw new DomainException("O intervalo de revisão deve ser maior que zero.");
+
+            if (reviewInterval > TimeSpan.FromDays(365 * MaxReviewYears))
+                throw new DomainException($"O intervalo não pode ser maior que {MaxReviewYears} anos.");
+        }
+
+        ReviewFixedDate = reviewFixedDate;
+        ReviewInterval = reviewInterval;
+    }
+
+    public void MarkAsEvaluated()
+    {
+        LastEvaluatedAt = _clock.UtcNow;
+    }
 
     public void AddControl(Guid controlId, EControlType controlType)
     {
@@ -87,47 +188,6 @@ public class Risk : TenantEntity
         riskControl.ChangeEffectiveness(effectiveness);
 
         RecalculateEffectiveness();
-    }
-
-    public void RecalculateEffectiveness()
-    {
-        var probabilityRiskControls = _riskControls.Where(r => r.ControlType is EControlType.Preventive).ToList();
-        var impactRiskControls = _riskControls.Where(r => r.ControlType is EControlType.Detective or EControlType.Corrective).ToList();
-
-        EffectivenessOnProbability = CalculateEffectiveness(probabilityRiskControls);
-        EffectivenessOnImpact = CalculateEffectiveness(impactRiskControls);
-    }
-
-    private static double CalculateResidualScore(int probability, int impact, double effProbability, double effImpact)
-    {
-        var p = probability * (1 - effProbability / 100.0);
-        var i = impact * (1 - effImpact / 100.0);
-        return p * i;
-    }
-
-    private static double CalculateEffectiveness(List<RiskControl> controls)
-    {
-        if (!controls.Any())
-            return 0;
-
-        var combined = 1 - controls.Aggregate(1.0, (product, rc) => product * (1 - (rc.Effectiveness ?? 0) / 100.0));
-        return combined * 100;
-    }
-
-    public void ChangeProbability(int probability)
-    {
-        if (probability <= 0 || probability > 5)
-            throw new DomainException("A probabilidade deve estar entre 0 e 5");
-
-        Probability = probability;
-    }
-
-    public void ChangeImpact(int impact)
-    {
-        if (impact <= 0 || impact > 5)
-            throw new DomainException("O impacto deve estar entre 0 e 5");
-
-        Impact = impact;
     }
 
     public void AddIncident(Incident newIncident)

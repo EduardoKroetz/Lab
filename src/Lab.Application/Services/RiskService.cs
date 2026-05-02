@@ -112,8 +112,8 @@ public class RiskService
     {
         var risk = await _dbContext.Risks.FindAsync(id) ?? throw new NotFoundException("Risco não encontrado.");
 
-        risk.ChangeProbability(request.Probability);
-        risk.ChangeImpact(request.Impact);
+        risk.SetProbability(request.Probability);
+        risk.SetImpact(request.Impact);
 
         await ChangeTreatmentAsync(risk.Id, request.Treatment, request.TreatmentDescription);
         await _dbContext.SaveChangesAsync();
