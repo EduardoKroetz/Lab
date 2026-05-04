@@ -18,4 +18,7 @@ public class InsertRiskRequest
 
     [Range(1, 5, ErrorMessage = "O impacto deve estar entre 1 e 5.")]
     public int Impact { get; set; }
+
+    public DateTime? ReviewFixedDate { get; set; }
+    public TimeSpan? ReviewInterval { get; set; }
 }

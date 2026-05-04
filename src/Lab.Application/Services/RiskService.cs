@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Lab.Application.Common.Interfaces;
 using Lab.Application.DTOs.RiskControls;
 using Lab.Application.DTOs.Risks;
+using Lab.Domain.Common;
 using Lab.Domain.Entities;
 using Lab.Domain.Enums;
 using Lab.Domain.Exceptions;
@@ -14,11 +15,27 @@ public class RiskService
 {
     private readonly IApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ISystemClock _clock;
 
-    public RiskService(IApplicationDbContext dbContext, IMapper mapper)
+    public RiskService(IApplicationDbContext dbContext, IMapper mapper, ISystemClock clock)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _clock = clock;
+    }
+
+    private async Task<Risk> GetRiskWithRelationsAsync(Guid riskId)
+    {
+        var risk = await _dbContext.Risks
+            .Include(r => r.RiskControls)
+            .Include(r => r.Incidents)
+            .Include(r => r.WorkItems)
+            .FirstOrDefaultAsync(r => r.Id == riskId);
+
+        if (risk == null)
+            throw new NotFoundException("Risco não encontrado.");
+
+        return risk;
     }
 
     private async Task<bool> RiskCombinationExistsAsync(Guid assetId, Guid threatId, Guid vulnerabilityId, Guid? riskId = null)
@@ -30,39 +47,54 @@ public class RiskService
             r.VulnerabilityId == vulnerabilityId);
     }
 
-    private async Task ChangeTreatmentAsync(Guid riskId, ERiskTreatment treatment, string? description)
+    public async Task ChangeTreatmentAsync(ChangeTreatmentRequest request)
     {
-        var risk = await _dbContext.Risks.Include(r => r.RiskControls).FirstOrDefaultAsync(r => r.Id == riskId) ?? throw new NotFoundException("Risco não encontrado");
+        var risk = await GetRiskWithRelationsAsync(request.RiskId) ?? throw new NotFoundException("Risco não encontrado");
 
-        if (treatment == ERiskTreatment.Eliminate)
+        if (request.Treatment == ERiskTreatment.Eliminate)
         {
-            var asset = await _dbContext.Assets.FirstOrDefaultAsync(a => a.Id == risk.AssetId) ?? throw new NotFoundException("Ativo não encontrado");
+            var asset = await _dbContext.Assets.FindAsync(risk.AssetId) ?? throw new NotFoundException("Ativo não encontrado");
 
             if (asset.Enabled)
                 throw new ValidationException("Para Eliminar, o ativo vinculado deve estar desabilitado.");
         }
 
-        switch (treatment)
+        var handlers = new Dictionary<ERiskTreatment, Action>
         {
-            case ERiskTreatment.Mitigate:
-            risk.Mitigate();
-            break;
+            [ERiskTreatment.Accept] = () => risk.Accept(request.Description),
+            [ERiskTreatment.Transfer] = () => risk.Transfer(request.Description),
+            [ERiskTreatment.Eliminate] = () => risk.Eliminate(request.Description),
+            [ERiskTreatment.Mitigate] = () => risk.Mitigate()
+        };
 
-            case ERiskTreatment.Accept:
-            risk.Accept(reason: description);
-            break;
+        if (!handlers.TryGetValue(request.Treatment, out var action))
+            throw new DomainException("Tratamento inválido.");
 
-            case ERiskTreatment.Transfer:
-            risk.Transfer(description: description);
-            break;
+        action();
 
-            case ERiskTreatment.Eliminate:
-            risk.Eliminate(reason: description);
-            break;
+        risk.AddHistory(ERiskHistoryEvent.TreatmentChanged, _clock);
 
-            default:
-            throw new InvalidOperationException("Tratamento inválido");
-        }
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task ChangeStatusAsync(ChangeStatusRequest request)
+    {
+        var risk = await GetRiskWithRelationsAsync(request.RiskId) ?? throw new NotFoundException("Risco não encontrado");
+
+        var handlers = new Dictionary<ERiskStatus, Action>
+        {
+            [ERiskStatus.Identified] = () => throw new DomainException("Não é possível voltar o status para 'Identificado'"),
+            [ERiskStatus.UnderTreatment] = () => risk.StartTreatment(),
+            [ERiskStatus.Monitoring] = () => risk.EnterMonitoring(),
+            [ERiskStatus.Closed] = () => risk.Close(request.Description)
+        };
+
+        if (!handlers.TryGetValue(request.Status, out var action))
+            throw new DomainException("Status inválido.");
+
+        action();
+
+        risk.AddHistory(ERiskHistoryEvent.StatusChanged, _clock);
 
         await _dbContext.SaveChangesAsync();
     }
@@ -100,7 +132,9 @@ public class RiskService
         if (combinationExists)
             throw new ValidationException("Já existe um risco com a combinação de ativo, ameaça e vulnerabilidade.");
 
-        var risk = new Risk(request.AssetId, request.ThreatId, request.VulnerabilityId, request.Probability, request.Impact);
+        var risk = new Risk(request.AssetId, request.ThreatId, request.VulnerabilityId, request.Probability, request.Impact, request.ReviewFixedDate, request.ReviewInterval, _clock);
+
+        risk.AddHistory(ERiskHistoryEvent.Created, _clock);
 
         await _dbContext.Risks.AddAsync(risk);
         await _dbContext.SaveChangesAsync();
@@ -114,8 +148,10 @@ public class RiskService
 
         risk.SetProbability(request.Probability);
         risk.SetImpact(request.Impact);
+        risk.SetReviewSchedule(request.ReviewFixedDate, request.ReviewInterval, _clock);
 
-        await ChangeTreatmentAsync(risk.Id, request.Treatment, request.TreatmentDescription);
+        risk.AddHistory(ERiskHistoryEvent.Updated, _clock);
+
         await _dbContext.SaveChangesAsync();
 
         return await GetByIdAsync(id);
@@ -151,9 +187,7 @@ public class RiskService
 
     public async Task ChangeControlEffectivenessAsync(Guid riskId, UpdateRiskControlEffectivenessRequest request)
     {
-        var risk = await _dbContext.Risks
-            .Include(r => r.RiskControls)
-            .FirstOrDefaultAsync(r => r.Id == riskId) ?? throw new NotFoundException("Risco não encontrado");
+        var risk = await GetRiskWithRelationsAsync(riskId) ?? throw new NotFoundException("Risco não encontrado");
 
         var control = risk.RiskControls.FirstOrDefault(rc => rc.ControlId == request.ControlId) ?? throw new NotFoundException("Controle não encontrado");
 

@@ -64,7 +64,7 @@
 	- Ao vencer, uma task é gerada automaticamente ao responsável do risco
 
 ### Controles 
-- Forma de defender/mitigar o risco
+- Forma de mitigar o risco
 - Os controles vinculados a riscos afetam diretamente o cálculo de Score do risco usando a eficácia do controle sobre o risco. Se não tiver eficácia, não influencia.
 - Um controle pode ser atribuído diretamente a um risco, sem necessidade de uma Task, porém sua eficácia só pode ser definida após a conclusão de uma Task.
 
@@ -85,7 +85,7 @@
 	- Influenciam o cálculo de Score do risco
 - Um incidente deve estar vinculado à um risco
 - O Score do incidente é calculado com base na quantidade e nível dos impactos vinculados
-- Caso não tenha nenhum impacto vinculado ao incidente, o nível pode ser alterado livremente, porém se tiver impactos vinculados o Nível passa a ser inferido pelo sistema.
+- Caso não tenha nenhum impacto vinculado ao incidente, o nível pode ser alterado livremente, porém se tiver impactos vinculados o Nível passa a ser inferido pelo Score.
 - Ao criar incidente
 	- Status do risco de move automaticamente para UnderTreatment (Em Tratamento)
 	- Cria uma Task automaticamente

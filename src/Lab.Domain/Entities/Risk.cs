@@ -19,7 +19,7 @@ public class Risk : TenantEntity
 
         SetProbability(probability);
         SetImpact(impact);
-        SetReviewSchedule(reviewFixedDate, reviewInterval);
+        SetReviewSchedule(reviewFixedDate, reviewInterval, clock);
     }
 
     public Guid AssetId { get; private set; }
@@ -66,18 +66,45 @@ public class Risk : TenantEntity
         }
     }
 
+    #region Navigation Properties
+
     public Asset Asset { get; private set; } = null!;
     public Threat Threat { get; private set; } = null!;
     public Vulnerability Vulnerability { get; private set; } = null!;
 
-    private readonly List<WorkItem> _tasks = [];
-    public IReadOnlyCollection<WorkItem> Tasks => _tasks.AsReadOnly();
-
-    private readonly List<Incident> _incidents = [];
-    public IReadOnlyCollection<Incident> Incidents => _incidents.AsReadOnly();
+    #endregion
 
     private readonly List<RiskControl> _riskControls = [];
     public IReadOnlyCollection<RiskControl> RiskControls => _riskControls.AsReadOnly();
+    public void AddControl(Guid controlId, EControlType controlType)
+    {
+        if (_riskControls.Any(rc => rc.ControlId == controlId))
+            throw new DomainException("Controle já está vinculado ao risco");
+
+        var riskControl = new RiskControl(Id, controlId, controlType, effectiveness: null);
+        _riskControls.Add(riskControl);
+
+        RecalculateEffectiveness();
+    }
+
+    public void RemoveControl(Guid controlId)
+    {
+        var riskControl = _riskControls.FirstOrDefault(rc => rc.ControlId == controlId)
+            ?? throw new DomainException("Controle não encontrado nesse risco");
+
+        _riskControls.Remove(riskControl);
+        RecalculateEffectiveness();
+    }
+
+    public void ApplyControlExecution(Guid controlId, int effectiveness)
+    {
+        var riskControl = _riskControls.FirstOrDefault(rc => rc.ControlId == controlId)
+            ?? throw new DomainException("Controle não encontrado nesse risco");
+
+        riskControl.ChangeEffectiveness(effectiveness);
+
+        RecalculateEffectiveness();
+    }
 
     public void RecalculateEffectiveness()
     {
@@ -120,11 +147,11 @@ public class Risk : TenantEntity
         Impact = impact;
     }
 
-    public void SetReviewSchedule(DateTime? reviewFixedDate, TimeSpan? reviewInterval)
+    public void SetReviewSchedule(DateTime? reviewFixedDate, TimeSpan? reviewInterval, ISystemClock clock)
     {
         const int MaxReviewYears = 10;
 
-        var now = _clock.UtcNow;
+        var now = clock.UtcNow;
         var maxDate = now.AddYears(MaxReviewYears);
 
         if (reviewFixedDate is null && reviewInterval is null)
@@ -160,35 +187,8 @@ public class Risk : TenantEntity
         LastEvaluatedAt = _clock.UtcNow;
     }
 
-    public void AddControl(Guid controlId, EControlType controlType)
-    {
-        if (_riskControls.Any(rc => rc.ControlId == controlId))
-            throw new DomainException("Controle já está vinculado ao risco");
-
-        var riskControl = new RiskControl(Id, controlId, controlType, effectiveness: null);
-        _riskControls.Add(riskControl);
-
-        RecalculateEffectiveness();
-    }
-
-    public void RemoveControl(Guid controlId)
-    {
-        var riskControl = _riskControls.FirstOrDefault(rc => rc.ControlId == controlId)
-            ?? throw new DomainException("Controle não encontrado nesse risco");
-
-        _riskControls.Remove(riskControl);
-        RecalculateEffectiveness();
-    }
-
-    public void ApplyControlExecution(Guid controlId, int effectiveness)
-    {
-        var riskControl = _riskControls.FirstOrDefault(rc => rc.ControlId == controlId)
-            ?? throw new DomainException("Controle não encontrado nesse risco");
-
-        riskControl.ChangeEffectiveness(effectiveness);
-
-        RecalculateEffectiveness();
-    }
+    private readonly List<Incident> _incidents = [];
+    public IReadOnlyCollection<Incident> Incidents => _incidents.AsReadOnly();
 
     public void AddIncident(Incident newIncident)
     {
@@ -200,21 +200,23 @@ public class Risk : TenantEntity
         StartTreatment();
     }
 
-    public void AddTask(WorkItem newTask)
+    private readonly List<WorkItem> _workItems = [];
+    public IReadOnlyCollection<WorkItem> WorkItems => _workItems.AsReadOnly();
+    public void AddWorkItem(WorkItem workItem)
     {
-        if (newTask.RelatedRiskId != Id)
+        if (workItem.RelatedRiskId != Id)
             throw new DomainException("Não é possível adicionar uma tarefa não relacionada ao risco.");
 
-        _tasks.Add(newTask);
+        _workItems.Add(workItem);
 
-        if (newTask.IsActionTask && Status != ERiskStatus.UnderTreatment)
+        if (workItem.IsActionTask && Status != ERiskStatus.UnderTreatment)
             StartTreatment();
     }
 
     public void StartTreatment()
     {
         var hasOpenIncident = _incidents.Any(i => i.Status is EIncidentStatus.Open);
-        var hasOpenActionTask = _tasks.Any(t => t.IsOpen && t.IsActionTask);
+        var hasOpenActionTask = _workItems.Any(t => t.IsOpen && t.IsActionTask);
 
         if (!hasOpenActionTask && !hasOpenIncident)
             throw new DomainException("É necessário ao menos uma tarefa de ação aberta ou que haja um incidente aberto.");
@@ -224,7 +226,7 @@ public class Risk : TenantEntity
 
     public void EnterMonitoring()
     {
-        var hasOpenTask = _tasks.Any(t => t.IsOpen);
+        var hasOpenTask = _workItems.Any(t => t.IsOpen);
         if (hasOpenTask)
             throw new DomainException("Não é possível iniciar o monitoramento do risco: é necessário que todas as tarefas vinculadas ao risco sejam concluídas.");
 
@@ -293,4 +295,33 @@ public class Risk : TenantEntity
         Close(reason);
     }
 
+    private readonly List<RiskHistory> _histories = [];
+    public IReadOnlyCollection<RiskHistory> Histories => _histories.AsReadOnly();
+    public void AddHistory(ERiskHistoryEvent historyEvent, ISystemClock clock)
+    {
+        var snapshot = new RiskSnapshot
+        (
+            Id,
+            AssetId,
+            ThreatId,
+            VulnerabilityId,
+            Probability,
+            Impact,
+            Status,
+            Treatment,
+            TreatmentDescription,
+            RawScore,
+            ResidualScore,
+            Level,
+            EffectivenessOnProbability,
+            EffectivenessOnImpact,
+            ReviewFixedDate,
+            ReviewInterval,
+            LastEvaluatedAt,
+            NextReviewDate
+        );
+
+        var newHistory = new RiskHistory(Id, historyEvent, snapshot, clock);
+        _histories.Add(newHistory);
+    }
 }

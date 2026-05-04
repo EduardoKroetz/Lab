@@ -16,4 +16,7 @@ public class UpdateRiskRequest
 
     public ERiskTreatment Treatment { get; set; }
     public string? TreatmentDescription { get; set; }
+
+    public DateTime? ReviewFixedDate { get; set; }
+    public TimeSpan? ReviewInterval { get; set; }
 }
