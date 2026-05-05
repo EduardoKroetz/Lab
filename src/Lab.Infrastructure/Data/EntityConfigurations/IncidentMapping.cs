@@ -13,11 +13,12 @@ public class IncidentMapping : IEntityTypeConfiguration<Incident>
         builder.Property(x => x.Description).IsRequired().HasMaxLength(500);
         builder.Property(x => x.DateOccurred).IsRequired();
         builder.Property(x => x.Status).HasConversion(new EnumToStringConverter<EIncidentStatus>());
+        builder.Property(x => x.Score).IsRequired();
 
-        builder.HasOne(x => x.RelatedRisk)
-            .WithMany()
+        builder.HasOne(x => x.Risk)
+            .WithMany(x => x.Incidents)
             .HasForeignKey(x => x.RiskId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(x => x.IncidentImpacts)
             .WithOne(x => x.Incident)

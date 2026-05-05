@@ -19,8 +19,16 @@ public class Incident : TenantEntity
     public DateTime DateOccurred { get; private set; }
     public Guid RiskId { get; private set; }
     public EIncidentStatus Status { get; private set; }
+    public int Score { get; set; }
+    public EIncidentSeverityLevel SeverityLevel => Score switch
+    {
+        >= 36 => EIncidentSeverityLevel.Critical,
+        >= 21 => EIncidentSeverityLevel.High,
+        >= 11 => EIncidentSeverityLevel.Medium,
+        _ => EIncidentSeverityLevel.Low
+    };
 
-    public Risk? RelatedRisk { get; private set; } = null!;
+    public Risk Risk { get; private set; } = null!;
 
     private readonly List<IncidentImpact> _incidentImpacts = [];
     public IReadOnlyCollection<IncidentImpact> IncidentImpacts => _incidentImpacts.AsReadOnly();
@@ -33,13 +41,12 @@ public class Incident : TenantEntity
         RiskId = riskId;
     }
 
-    public void AddImpact(EIncidentImpactType type, EIncidentImpactLevel level)
+    public void AddImpact(EIncidentImpactType type, int severityScore, string? description)
     {
-        if (_incidentImpacts.Any(x => x.Type == type && x.Level == level))
-            throw new DomainException("Este incidente já possui um impacto com o mesmo tipo e nível.");
-
-        var incidentImpact = new IncidentImpact(Id, type, level);
+        var incidentImpact = new IncidentImpact(Id, type, severityScore, description);
         _incidentImpacts.Add(incidentImpact);
+
+        RecalculateScore();
     }
 
     public void RemoveImpact(Guid impactId)
@@ -48,5 +55,12 @@ public class Incident : TenantEntity
             ?? throw new DomainException("Impacto de incidente nao encontrado.");
 
         _incidentImpacts.Remove(incidentImpact);
+
+        RecalculateScore();
+    }
+
+    private void RecalculateScore()
+    {
+        Score = _incidentImpacts.Sum(ii => ii.SeverityScore);
     }
 }

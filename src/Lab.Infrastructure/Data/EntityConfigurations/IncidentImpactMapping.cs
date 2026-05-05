@@ -11,6 +11,5 @@ public class IncidentImpactMapping : IEntityTypeConfiguration<IncidentImpact>
     public void Configure(EntityTypeBuilder<IncidentImpact> builder)
     {
         builder.Property(x => x.Type).HasConversion(new EnumToStringConverter<EIncidentImpactType>());
-        builder.Property(x => x.Level).HasConversion(new EnumToStringConverter<EIncidentImpactLevel>());
     }
 }

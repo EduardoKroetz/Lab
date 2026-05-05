@@ -96,16 +96,6 @@ public class Risk : TenantEntity
         RecalculateEffectiveness();
     }
 
-    public void ApplyControlExecution(Guid controlId, int effectiveness)
-    {
-        var riskControl = _riskControls.FirstOrDefault(rc => rc.ControlId == controlId)
-            ?? throw new DomainException("Controle não encontrado nesse risco");
-
-        riskControl.ChangeEffectiveness(effectiveness);
-
-        RecalculateEffectiveness();
-    }
-
     public void RecalculateEffectiveness()
     {
         var probabilityRiskControls = _riskControls.Where(r => r.ControlType is EControlType.Preventive).ToList();
@@ -182,6 +172,20 @@ public class Risk : TenantEntity
         ReviewInterval = reviewInterval;
     }
 
+    public void SetTreatment(ERiskTreatment? treatment, string? description)
+    {
+        if (treatment is not null && treatment != ERiskTreatment.Mitigate && string.IsNullOrWhiteSpace(description))
+            throw new DomainException("A descrição do tratamento é obrigatória para tratamentos que não sejam 'Mitigar'.");
+
+        Treatment = treatment;
+        TreatmentDescription = description;
+    }
+
+    public void SetStatus(ERiskStatus status)
+    {
+        Status = status;
+    }
+
     public void MarkAsEvaluated()
     {
         LastEvaluatedAt = _clock.UtcNow;
@@ -197,102 +201,6 @@ public class Risk : TenantEntity
 
         _incidents.Add(newIncident);
 
-        StartTreatment();
-    }
-
-    private readonly List<WorkItem> _workItems = [];
-    public IReadOnlyCollection<WorkItem> WorkItems => _workItems.AsReadOnly();
-    public void AddWorkItem(WorkItem workItem)
-    {
-        if (workItem.RelatedRiskId != Id)
-            throw new DomainException("Não é possível adicionar uma tarefa não relacionada ao risco.");
-
-        _workItems.Add(workItem);
-
-        if (workItem.IsActionTask && Status != ERiskStatus.UnderTreatment)
-            StartTreatment();
-    }
-
-    public void StartTreatment()
-    {
-        var hasOpenIncident = _incidents.Any(i => i.Status is EIncidentStatus.Open);
-        var hasOpenActionTask = _workItems.Any(t => t.IsOpen && t.IsActionTask);
-
-        if (!hasOpenActionTask && !hasOpenIncident)
-            throw new DomainException("É necessário ao menos uma tarefa de ação aberta ou que haja um incidente aberto.");
-
-        Status = ERiskStatus.UnderTreatment;
-    }
-
-    public void EnterMonitoring()
-    {
-        var hasOpenTask = _workItems.Any(t => t.IsOpen);
-        if (hasOpenTask)
-            throw new DomainException("Não é possível iniciar o monitoramento do risco: é necessário que todas as tarefas vinculadas ao risco sejam concluídas.");
-
-        Status = ERiskStatus.Monitoring;
-    }
-
-    public void Close(string reason)
-    {
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new DomainException("O motivo de fechamento do risco não foi informado.");
-
-        var treatmentAcceptOrEliminate = Treatment is ERiskTreatment.Accept or ERiskTreatment.Eliminate;
-
-        if (!treatmentAcceptOrEliminate)
-            throw new DomainException("Não é possível fechar o risco se o tratamento não for 'Aceito' ou 'Eliminado' e não for decisão manual.");
-
-        Status = ERiskStatus.Closed;
-        ReasonForClose = reason;
-    }
-
-    public void CloseManually(string reason)
-    {
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new DomainException("O motivo de fechamento do risco não foi informado.");
-
-        Status = ERiskStatus.Closed;
-        ReasonForClose = reason;
-    }
-
-    public void Mitigate()
-    {
-        if (!_riskControls.Any())
-            throw new DomainException("Para Mitigar, o risco deve possuir ao menos um controle vinculado.");
-
-        Treatment = ERiskTreatment.Mitigate;
-    }
-
-    public void Accept(string? reason)
-    {
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new DomainException("O tratamento 'Aceito' requer justificativa.");
-
-        Treatment = ERiskTreatment.Accept;
-        TreatmentDescription = reason;
-
-        EnterMonitoring();
-    }
-
-    public void Transfer(string? description)
-    {
-        if (string.IsNullOrWhiteSpace(description))
-            throw new DomainException("O tratamento 'Transferido' requer descrição.");
-
-        Treatment = ERiskTreatment.Transfer;
-        TreatmentDescription = description;
-    }
-
-    public void Eliminate(string? reason)
-    {
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new DomainException("O tratamento 'Eliminado' requer justificativa.");
-
-        Treatment = ERiskTreatment.Eliminate;
-        TreatmentDescription = reason;
-
-        Close(reason);
     }
 
     private readonly List<RiskHistory> _histories = [];

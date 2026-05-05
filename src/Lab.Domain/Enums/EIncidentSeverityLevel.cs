@@ -1,6 +1,6 @@
 ﻿namespace Lab.Domain.Enums;
 
-public enum EIncidentImpactLevel
+public enum EIncidentSeverityLevel
 {
     Low = 1,
     Medium = 2,

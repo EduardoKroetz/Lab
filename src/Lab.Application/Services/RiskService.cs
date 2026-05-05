@@ -29,7 +29,6 @@ public class RiskService
         var risk = await _dbContext.Risks
             .Include(r => r.RiskControls)
             .Include(r => r.Incidents)
-            .Include(r => r.WorkItems)
             .FirstOrDefaultAsync(r => r.Id == riskId);
 
         if (risk == null)
@@ -45,58 +44,6 @@ public class RiskService
             r.AssetId == assetId &&
             r.ThreatId == threatId &&
             r.VulnerabilityId == vulnerabilityId);
-    }
-
-    public async Task ChangeTreatmentAsync(ChangeTreatmentRequest request)
-    {
-        var risk = await GetRiskWithRelationsAsync(request.RiskId) ?? throw new NotFoundException("Risco não encontrado");
-
-        if (request.Treatment == ERiskTreatment.Eliminate)
-        {
-            var asset = await _dbContext.Assets.FindAsync(risk.AssetId) ?? throw new NotFoundException("Ativo não encontrado");
-
-            if (asset.Enabled)
-                throw new ValidationException("Para Eliminar, o ativo vinculado deve estar desabilitado.");
-        }
-
-        var handlers = new Dictionary<ERiskTreatment, Action>
-        {
-            [ERiskTreatment.Accept] = () => risk.Accept(request.Description),
-            [ERiskTreatment.Transfer] = () => risk.Transfer(request.Description),
-            [ERiskTreatment.Eliminate] = () => risk.Eliminate(request.Description),
-            [ERiskTreatment.Mitigate] = () => risk.Mitigate()
-        };
-
-        if (!handlers.TryGetValue(request.Treatment, out var action))
-            throw new DomainException("Tratamento inválido.");
-
-        action();
-
-        risk.AddHistory(ERiskHistoryEvent.TreatmentChanged, _clock);
-
-        await _dbContext.SaveChangesAsync();
-    }
-
-    public async Task ChangeStatusAsync(ChangeStatusRequest request)
-    {
-        var risk = await GetRiskWithRelationsAsync(request.RiskId) ?? throw new NotFoundException("Risco não encontrado");
-
-        var handlers = new Dictionary<ERiskStatus, Action>
-        {
-            [ERiskStatus.Identified] = () => throw new DomainException("Não é possível voltar o status para 'Identificado'"),
-            [ERiskStatus.UnderTreatment] = () => risk.StartTreatment(),
-            [ERiskStatus.Monitoring] = () => risk.EnterMonitoring(),
-            [ERiskStatus.Closed] = () => risk.Close(request.Description)
-        };
-
-        if (!handlers.TryGetValue(request.Status, out var action))
-            throw new DomainException("Status inválido.");
-
-        action();
-
-        risk.AddHistory(ERiskHistoryEvent.StatusChanged, _clock);
-
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<List<GetRiskListResponse>> GetListAsync()
@@ -148,6 +95,8 @@ public class RiskService
 
         risk.SetProbability(request.Probability);
         risk.SetImpact(request.Impact);
+        risk.SetTreatment(request.Treatment, request.TreatmentDescription);
+        risk.SetStatus(request.Status);
         risk.SetReviewSchedule(request.ReviewFixedDate, request.ReviewInterval, _clock);
 
         risk.AddHistory(ERiskHistoryEvent.Updated, _clock);

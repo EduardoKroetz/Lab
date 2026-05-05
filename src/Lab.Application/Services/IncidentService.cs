@@ -19,11 +19,24 @@ public class IncidentService
         _mapper = mapper;
     }
 
+    private async Task<Incident> GetIncidentWithRelationsAsync(Guid incidentId)
+    {
+        var incident = await _dbContext.Incidents
+             .AsNoTracking()
+             .Include(incident => incident.IncidentImpacts)
+             .FirstOrDefaultAsync(incident => incident.Id == incidentId);
+
+        if (incident == null)
+            throw new NotFoundException("Incidente não encontrado.");
+
+        return incident;
+    }
+
     public async Task<List<GetIncidentListResponse>> GetListAsync()
     {
         var incidents = await _dbContext.Incidents
             .AsNoTracking()
-            .Include(incident => incident.RelatedRisk)
+            .Include(incident => incident.Risk)
             .Include(incident => incident.IncidentImpacts)
             .ToListAsync();
 
@@ -34,7 +47,7 @@ public class IncidentService
     {
         var incident = await _dbContext.Incidents
             .AsNoTracking()
-            .Include(incident => incident.RelatedRisk)
+            .Include(incident => incident.Risk)
             .Include(incident => incident.IncidentImpacts)
             .FirstOrDefaultAsync(incident => incident.Id == id);
 
@@ -85,26 +98,16 @@ public class IncidentService
 
     public async Task AddImpactAsync(Guid incidentId, UpsertIncidentImpactRequest request)
     {
-        var incident = await _dbContext.Incidents
-            .Include(x => x.IncidentImpacts)
-            .FirstOrDefaultAsync(x => x.Id == incidentId);
+        var incident = await GetIncidentWithRelationsAsync(incidentId);
 
-        if (incident == null)
-            throw new NotFoundException("Incidente não encontrado.");
-
-        incident.AddImpact(request.Type, request.Level);
+        incident.AddImpact(request.Type, request.SeverityScore, request.Description);
 
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task RemoveImpactAsync(Guid incidentId, Guid impactId)
     {
-        var incident = await _dbContext.Incidents
-            .Include(x => x.IncidentImpacts)
-            .FirstOrDefaultAsync(x => x.Id == incidentId);
-
-        if (incident == null)
-            throw new NotFoundException("Incidente não encontrado.");
+        var incident = await GetIncidentWithRelationsAsync(incidentId);
 
         incident.RemoveImpact(impactId);
 

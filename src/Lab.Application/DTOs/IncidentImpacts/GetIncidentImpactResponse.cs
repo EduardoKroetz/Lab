@@ -8,5 +8,5 @@ public class GetIncidentImpactResponse
     public Guid? IncidentId { get; set; }
     public string IncidentDescription { get; set; } = null!;
     public EIncidentImpactType Type { get; set; }
-    public EIncidentImpactLevel Level { get; set; }
+    public EIncidentImpactSeverityLevel Level { get; set; }
 }
