@@ -38,8 +38,8 @@ public class IncidentImpact : TenantEntity
 
     public void SetSeverityScore(int severityScore)
     {
-        if (severityScore < 0 || severityScore > 10)
-            throw new DomainException("A severidade do impacto deve estar entre 0 e 10.");
+        if (severityScore <= 0 || severityScore > 10)
+            throw new DomainException("A severidade do impacto deve estar entre 1 e 10.");
 
         SeverityScore = severityScore;
     }
