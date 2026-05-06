@@ -19,7 +19,7 @@ public class Incident : TenantEntity
     public DateTime DateOccurred { get; private set; }
     public Guid RiskId { get; private set; }
     public EIncidentStatus Status { get; private set; }
-    public int Score { get; set; }
+    public int Score { get; private set; }
     public EIncidentSeverityLevel SeverityLevel => Score switch
     {
         >= 36 => EIncidentSeverityLevel.Critical,
