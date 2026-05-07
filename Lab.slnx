@@ -9,7 +9,7 @@
     <Project Path="src/Lab.Infrastructure/Lab.Infrastructure.csproj" Id="f199dbb9-7ea2-4187-b48f-1c4814eaf86d" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="Lab.IntegrationTests/Lab.IntegrationTests.csproj" Id="50d4d091-67a8-4f70-af8c-b4b4de8bc05d" />
+    <Project Path="tests/Lab.IntegrationTests/Lab.IntegrationTests.csproj" />
     <Project Path="tests/Lab.UnitTests/Lab.UnitTests.csproj" />
   </Folder>
 </Solution>
