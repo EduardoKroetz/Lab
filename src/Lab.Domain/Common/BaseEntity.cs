@@ -2,5 +2,5 @@
 
 public class BaseEntity
 {
-    public virtual Guid Id { get; private set; }
+    public virtual Guid Id { get; private set; } = Guid.NewGuid();
 }

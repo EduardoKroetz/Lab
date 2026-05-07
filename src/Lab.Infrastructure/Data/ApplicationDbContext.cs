@@ -45,6 +45,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             }
         }
 
+        modelBuilder.Model.GetEntityTypes()
+            .Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType))
+            .ToList()
+            .ForEach(e =>
+            {
+                modelBuilder.Entity(e.ClrType).Property(nameof(BaseEntity.Id)).ValueGeneratedNever();
+            });
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
