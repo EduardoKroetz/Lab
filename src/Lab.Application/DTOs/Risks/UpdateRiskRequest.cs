@@ -14,7 +14,7 @@ public class UpdateRiskRequest
     [Required(ErrorMessage = "Informe o status.")]
     public ERiskStatus Status { get; set; }
 
-    public ERiskTreatment Treatment { get; set; }
+    public ERiskTreatment? Treatment { get; set; }
     public string? TreatmentDescription { get; set; }
 
     public DateTime? ReviewFixedDate { get; set; }

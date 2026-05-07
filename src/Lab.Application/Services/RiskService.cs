@@ -119,7 +119,7 @@ public class RiskService
         var risk = await _dbContext.Risks.Include(r => r.RiskControls).FirstOrDefaultAsync(r => r.Id == riskId) ?? throw new NotFoundException("Risco não encontrado.");
         var control = await _dbContext.Controls.FindAsync(request.ControlId) ?? throw new NotFoundException("Controle não encontrado.");
 
-        risk.AddControl(control.Id, control.Type);
+        risk.AddControl(control.Id, control.Type, request.Effectiveness);
 
         await _dbContext.SaveChangesAsync();
     }

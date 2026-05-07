@@ -76,12 +76,12 @@ public class Risk : TenantEntity
 
     private readonly List<RiskControl> _riskControls = [];
     public IReadOnlyCollection<RiskControl> RiskControls => _riskControls.AsReadOnly();
-    public void AddControl(Guid controlId, EControlType controlType)
+    public void AddControl(Guid controlId, EControlType controlType, int effectiveness)
     {
         if (_riskControls.Any(rc => rc.ControlId == controlId))
             throw new DomainException("Controle já está vinculado ao risco");
 
-        var riskControl = new RiskControl(Id, controlId, controlType, effectiveness: null);
+        var riskControl = new RiskControl(Id, controlId, controlType, effectiveness);
         _riskControls.Add(riskControl);
 
         RecalculateEffectiveness();
@@ -117,7 +117,7 @@ public class Risk : TenantEntity
         if (!controls.Any())
             return 0;
 
-        var combined = 1 - controls.Aggregate(1.0, (product, rc) => product * (1 - (rc.Effectiveness ?? 0) / 100.0));
+        var combined = 1 - controls.Aggregate(1.0, (product, rc) => product * (1 - rc.Effectiveness / 100.0));
         return combined * 100;
     }
 
