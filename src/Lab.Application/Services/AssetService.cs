@@ -20,7 +20,7 @@ public class AssetService
 
     private async Task<bool> IsNameUniqueAsync(string name, Guid? id = null)
     {
-        var isUnique = !(await _dbContext.Assets.AnyAsync(a => a.Id != id && a.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)));
+        var isUnique = !(await _dbContext.Assets.AnyAsync(a => a.Id != id && a.Name.ToLower() == name.ToLower()));
 
         return isUnique;
     }
