@@ -264,7 +264,7 @@ public class RiskTests
         var risk = NewRisk();
         var controlId = Guid.NewGuid();
 
-        risk.AddControl(controlId, EControlType.Preventive);
+        risk.AddControl(controlId, EControlType.Preventive, 30);
 
         Assert.Single(risk.RiskControls);
     }
@@ -275,19 +275,9 @@ public class RiskTests
         var risk = NewRisk();
         var controlId = Guid.NewGuid();
 
-        risk.AddControl(controlId, EControlType.Preventive);
+        risk.AddControl(controlId, EControlType.Preventive, 30);
 
-        Assert.Throws<DomainException>(() => risk.AddControl(controlId, EControlType.Preventive));
-    }
-
-    [Fact]
-    public void AddControl_WithoutApplyingEffectiveness_EffectivenessMustBeZero()
-    {
-        var risk = NewRisk();
-
-        risk.AddControl(Guid.NewGuid(), EControlType.Preventive);
-
-        Assert.Equal(0, risk.EffectivenessOnProbability);
+        Assert.Throws<DomainException>(() => risk.AddControl(controlId, EControlType.Preventive, 40));
     }
 
     // -------------------------------------------------------
@@ -299,7 +289,7 @@ public class RiskTests
     {
         var risk = NewRisk();
         var controlId = Guid.NewGuid();
-        risk.AddControl(controlId, EControlType.Preventive);
+        risk.AddControl(controlId, EControlType.Preventive, 40);
 
         risk.RemoveControl(controlId);
 
