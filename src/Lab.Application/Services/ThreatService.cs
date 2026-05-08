@@ -20,7 +20,7 @@ public class ThreatService
 
     private async Task<bool> IsNameUniqueAsync(string name, Guid? id = null)
     {
-        return !(await _dbContext.Threats.AnyAsync(a => a.Id != id && a.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)));
+        return !(await _dbContext.Threats.AnyAsync(a => a.Id != id && a.Name.ToLower() == name.ToLower()));
     }
 
     public async Task<List<GetThreatResponse>> GetListAsync()
@@ -60,9 +60,7 @@ public class ThreatService
 
     public async Task<GetThreatResponse> UpdateAsync(Guid id, UpsertThreatRequest request)
     {
-        var threat = await _dbContext.Threats.FindAsync(id);
-        if (threat == null)
-            throw new NotFoundException("Ameaça não encontrada.");
+        var threat = await _dbContext.Threats.FindAsync(id) ?? throw new NotFoundException("Ameaça não encontrada.");
 
         var isNameUnique = await IsNameUniqueAsync(request.Name, id);
         if (!isNameUnique)
@@ -77,9 +75,7 @@ public class ThreatService
 
     public async Task DeleteAsync(Guid id)
     {
-        var threat = await _dbContext.Threats.Include(x => x.Risks).FirstOrDefaultAsync(x => x.Id == id);
-        if (threat == null)
-            throw new NotFoundException("Ameaça não encontrada.");
+        var threat = await _dbContext.Threats.Include(x => x.Risks).FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException("Ameaça não encontrada.");
 
         if (threat.Risks.Count > 0)
             throw new ValidationException("Esta ameaça não pode ser excluída enquanto houver riscos vinculados.");
