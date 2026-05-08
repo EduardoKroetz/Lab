@@ -22,7 +22,6 @@ public class IncidentService
     private async Task<Incident> GetIncidentWithRelationsAsync(Guid incidentId)
     {
         var incident = await _dbContext.Incidents
-             .AsNoTracking()
              .Include(incident => incident.IncidentImpacts)
              .FirstOrDefaultAsync(incident => incident.Id == incidentId);
 
@@ -96,13 +95,26 @@ public class IncidentService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task AddImpactAsync(Guid incidentId, UpsertIncidentImpactRequest request)
+    public async Task<GetIncidentImpactResponse> AddImpactAsync(Guid incidentId, UpsertIncidentImpactRequest request)
     {
         var incident = await GetIncidentWithRelationsAsync(incidentId);
 
-        incident.AddImpact(request.Type, request.SeverityScore, request.Description);
+        var impact = incident.AddImpact(request.Type, request.SeverityScore, request.Description);
 
         await _dbContext.SaveChangesAsync();
+
+        return _mapper.Map<GetIncidentImpactResponse>(impact);
+    }
+
+    public async Task<GetIncidentImpactResponse> UpdateImpactAsync(Guid incidentId, Guid impactId, UpsertIncidentImpactRequest request)
+    {
+        var incident = await GetIncidentWithRelationsAsync(incidentId);
+
+        var impact = incident.UpdateImpact(impactId, request.Type, request.SeverityScore, request.Description);
+
+        await _dbContext.SaveChangesAsync();
+
+        return _mapper.Map<GetIncidentImpactResponse>(impact);
     }
 
     public async Task RemoveImpactAsync(Guid incidentId, Guid impactId)

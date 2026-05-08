@@ -25,7 +25,7 @@ public class MappingProfile : Profile
         CreateMap<Incident, GetIncidentDetailResponse>().ForMember(dest => dest.Impacts, opt => opt.MapFrom(src => src.IncidentImpacts));
         CreateMap<Incident, GetIncidentListResponse>();
 
-        CreateMap<IncidentImpact, GetIncidentImpactResponse>().ForMember(dest => dest.IncidentDescription, opt => opt.MapFrom(src => src.Incident.Description));
+        CreateMap<IncidentImpact, GetIncidentImpactResponse>();
 
         CreateMap<Risk, GetRiskListResponse>()
             .ForMember(dest => dest.AssetName, opt => opt.MapFrom(src => src.Asset.Name))

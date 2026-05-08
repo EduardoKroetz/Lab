@@ -41,12 +41,28 @@ public class Incident : TenantEntity
         RiskId = riskId;
     }
 
-    public void AddImpact(EIncidentImpactType type, int severityScore, string? description)
+    public IncidentImpact AddImpact(EIncidentImpactType type, int severityScore, string? description)
     {
         var incidentImpact = new IncidentImpact(Id, type, severityScore, description);
         _incidentImpacts.Add(incidentImpact);
 
         RecalculateScore();
+
+        return incidentImpact;
+    }
+
+    public IncidentImpact UpdateImpact(Guid impactId, EIncidentImpactType type, int severityScore, string? description)
+    {
+        var incidentImpact = _incidentImpacts.FirstOrDefault(ii => ii.Id == impactId)
+            ?? throw new DomainException("Impacto de incidente nao encontrado.");
+
+        incidentImpact.SetType(type);
+        incidentImpact.SetSeverityScore(severityScore);
+        incidentImpact.SetDescription(description);
+
+        RecalculateScore();
+
+        return incidentImpact;
     }
 
     public void RemoveImpact(Guid impactId)
