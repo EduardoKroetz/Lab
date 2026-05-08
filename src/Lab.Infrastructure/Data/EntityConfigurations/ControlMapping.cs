@@ -14,5 +14,7 @@ public class ControlMapping : IEntityTypeConfiguration<Control>
         builder.Property(x => x.Description).HasMaxLength(256);
         builder.Property(x => x.Category).HasConversion(new EnumToStringConverter<EControlCategory>());
         builder.Property(x => x.Type).HasConversion(new EnumToStringConverter<EControlType>());
+
+        builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
     }
 }

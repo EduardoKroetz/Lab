@@ -18,6 +18,11 @@ public class ControlService
         _mapper = mapper;
     }
 
+    private async Task<bool> IsNameUniqueAsync(string name, Guid? id = null)
+    {
+        return !(await _dbContext.Controls.AnyAsync(a => a.Id != id && a.Name.ToLower() == name.ToLower()));
+    }
+
     public async Task<List<GetControlResponse>> GetListAsync()
     {
         var controls = await _dbContext.Controls
@@ -41,6 +46,10 @@ public class ControlService
 
     public async Task<GetControlResponse> CreateAsync(UpsertControlRequest request)
     {
+        var isNameUnique = await IsNameUniqueAsync(request.Name);
+        if (!isNameUnique)
+            throw new ValidationException("O nome informado já está em uso");
+
         var control = new Control(request.Name, request.Description, request.Type, request.Category);
 
         await _dbContext.Controls.AddAsync(control);
@@ -54,6 +63,10 @@ public class ControlService
         var control = await _dbContext.Controls.FindAsync(id);
         if (control == null)
             throw new NotFoundException("Controle não encontrado.");
+
+        var isNameUnique = await IsNameUniqueAsync(request.Name, id);
+        if (!isNameUnique)
+            throw new ValidationException("O nome informado já está em uso");
 
         control.Update(request.Name, request.Description, request.Type, request.Category);
 
