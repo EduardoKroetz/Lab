@@ -19,7 +19,7 @@ public class RiskControlMapping : IEntityTypeConfiguration<RiskControl>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Control)
-          .WithMany()
+          .WithMany(x => x.RiskControls)
           .HasForeignKey(x => x.ControlId)
           .OnDelete(DeleteBehavior.Cascade);
     }

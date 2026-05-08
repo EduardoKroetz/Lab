@@ -22,7 +22,7 @@ public class RiskMapping : IEntityTypeConfiguration<Risk>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Vulnerability)
-            .WithMany()
+            .WithMany(x => x.Risks)
             .HasForeignKey(x => x.VulnerabilityId)
             .OnDelete(DeleteBehavior.Restrict);
 

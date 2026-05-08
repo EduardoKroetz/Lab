@@ -19,6 +19,8 @@ public class Control : TenantEntity
     public EControlType Type { get; private set; }
     public EControlCategory Category { get; private set; }
 
+    public List<RiskControl> RiskControls { get; set; }
+
     public void Update(string name, string description, EControlType type, EControlCategory category)
     {
         Name = name;

@@ -64,9 +64,10 @@ public class ControlService
 
     public async Task DeleteAsync(Guid id)
     {
-        var control = await _dbContext.Controls.FindAsync(id);
-        if (control == null)
-            throw new NotFoundException("Controle não encontrado.");
+        var control = await _dbContext.Controls.Include(c => c.RiskControls).FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException("Controle não encontrado.");
+
+        if (control.RiskControls.Count > 0)
+            throw new ValidationException("Não é possível excluir um controle que está vinculado a riscos.");
 
         _dbContext.Controls.Remove(control);
         await _dbContext.SaveChangesAsync();
