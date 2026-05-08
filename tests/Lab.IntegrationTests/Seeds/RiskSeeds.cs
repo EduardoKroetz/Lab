@@ -42,13 +42,4 @@ public static class RiskSeeds
 
         return (asset, threat, vulnerability);
     }
-
-    public static async Task<Control> SeedControlAsync(ApplicationDbContext dbContext)
-    {
-        var control = new Control("Monitoring", "desc", EControlType.Detective, EControlCategory.Technical);
-        dbContext.Controls.Add(control);
-        await dbContext.SaveChangesAsync();
-        return control;
-    }
-
 }

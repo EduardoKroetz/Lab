@@ -6,7 +6,6 @@ using Lab.Domain.Enums;
 using Lab.Domain.Exceptions;
 using Lab.IntegrationTests.Common;
 using Lab.IntegrationTests.Seeds;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Lab.IntegrationTests.Application.Services;
@@ -167,19 +166,19 @@ public class RiskServiceTests : IntegrationTestsBase
     public async Task AddControlAsync_ValidRequest_MustLinkControlToRisk()
     {
         var risk = await RiskSeeds.SeedRiskAsync(DbContext, Clock);
-        var control = await RiskSeeds.SeedControlAsync(DbContext);
+        var control = await ControlSeeds.SeedControlAsync(DbContext);
 
         ClearTracking();
         await _service.AddControlAsync(risk.Id, new InsertRiskControlRequest { ControlId = control.Id });
 
-        var persisted = await DbContext.Risks.Include(r => r.RiskControls).FirstAsync(r => r.Id == risk.Id);
-        Assert.Single(persisted.RiskControls);
+        var riskControls = await _service.GetListControlsAsync(risk.Id);
+        Assert.Single(riskControls);
     }
 
     [Fact]
     public async Task AddControlAsync_RiskNotFound_MustThrowNotFoundException()
     {
-        var control = await RiskSeeds.SeedControlAsync(DbContext);
+        var control = await ControlSeeds.SeedControlAsync(DbContext);
 
         await Assert.ThrowsAsync<NotFoundException>(() => _service.AddControlAsync(Guid.NewGuid(), new InsertRiskControlRequest { ControlId = control.Id }));
     }
@@ -196,15 +195,15 @@ public class RiskServiceTests : IntegrationTestsBase
     public async Task RemoveControlAsync_ExistingControl_MustUnlinkFromRisk()
     {
         var risk = await RiskSeeds.SeedRiskAsync(DbContext, Clock);
-        var control = await RiskSeeds.SeedControlAsync(DbContext);
+        var control = await ControlSeeds.SeedControlAsync(DbContext);
         ClearTracking();
         await _service.AddControlAsync(risk.Id, new InsertRiskControlRequest { ControlId = control.Id });
 
         ClearTracking();
         await _service.RemoveControlAsync(risk.Id, control.Id);
 
-        var persisted = await DbContext.Risks.Include(r => r.RiskControls).FirstAsync(r => r.Id == risk.Id);
-        Assert.Empty(persisted.RiskControls);
+        var riskControls = await _service.GetListControlsAsync(risk.Id);
+        Assert.Empty(riskControls);
     }
 
     // -------------------------------------------------------
